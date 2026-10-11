@@ -1,4 +1,4 @@
-<!doctype html><html lang="ar" dir="rtl"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#F2F1FA" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#0F0E26" media="(prefers-color-scheme: dark)"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="ملعب اللغات"><meta name="apple-mobile-web-app-status-bar-style" content="default"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"></head><body>
+<!doctype html><html lang="ar" dir="rtl" data-theme="dark"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#0F0E26"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="ملعب اللغات"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"><script>try{var t=(JSON.parse(localStorage.getItem("mal3ab-lughat-v1")||"{}").theme)||"dark";if(t!=="auto")document.documentElement.setAttribute("data-theme",t);}catch(e){document.documentElement.setAttribute("data-theme","dark");}</script><style>html[data-theme="dark"],html[data-theme="dark"] body{background:#0F0E26}</style></head><body>
 <title>ملعب اللغات</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -286,6 +286,8 @@ svg.i{width:1.25em;height:1.25em;flex:none;vertical-align:-0.2em}
 .mrow .spk{width:36px;height:36px}
 .mrow .spk .i{width:1.1em;height:1.1em}
 
+.themeseg{margin:10px 0 4px}
+
 </style>
 
 <div id="app" dir="rtl" lang="ar"></div>
@@ -522,13 +524,14 @@ var LANGS={
 Object.keys(LANGS).forEach(function(k){LANGS[k].all=[].concat.apply([],LANGS[k].units.map(function(u){return u.items;}));});
 
 /* ---------- state ---------- */
-function fresh(){return {lang:"fr",xp:0,streak:0,bestStreak:0,last:"",items:{},done:{},open:false,sound:true,best:{},bk:0,log:{},goal:50,cjSel:{},rd:{},ts:0};}
+function fresh(){return {lang:"fr",xp:0,streak:0,bestStreak:0,last:"",items:{},done:{},open:false,sound:true,best:{},bk:0,log:{},goal:50,cjSel:{},rd:{},ts:0,theme:"dark"};}
 var HAD_LOCAL=false;
 function load(){try{var r=localStorage.getItem(KEY);if(r){HAD_LOCAL=true;return Object.assign(fresh(),JSON.parse(r));}}catch(e){}return fresh();}
 var S=load();
 function saveLocal(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
 function save(){S.ts=Date.now();saveLocal();cloudSchedule();}
 function L(){return LANGS[S.lang];}
+function applyTheme(){var t=S.theme||"dark",r=document.documentElement;if(t==="auto")r.removeAttribute("data-theme");else r.setAttribute("data-theme",t);var m=document.querySelectorAll('meta[name="theme-color"]');var dark=t==="dark"||(t==="auto"&&window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches);m.forEach(function(x){x.setAttribute("content",dark?"#0F0E26":"#F2F1FA");x.removeAttribute("media");});}
 function dstr(d){return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();}
 function today(){return dstr(new Date());}
 function yest(){var d=new Date();d.setDate(d.getDate()-1);return dstr(d);}
@@ -921,7 +924,7 @@ function homeView(){
   });
   var bkTxt=CL.on?'تقدّمك متزامن مع حسابك وبيظهر على أي جهاز':(S.bk?('آخر نسخة احتياطية: '+(Math.floor((Date.now()-S.bk)/864e5)||'النهارده')+(Math.floor((Date.now()-S.bk)/864e5)?' يوم':'')):'تقدّمك محفوظ في المتصفح ده بس');
   h+='<div class="foot"><button class="linkbtn" data-act="backup">نسخة احتياطية ونقل التقدّم</button><small>'+bkTxt+'</small>'
-    +'<button class="linkbtn" data-act="unlock">'+(S.open?'رجّع القفل على الوحدات':'عارف المستوى؟ افتح كل الوحدات')+'</button></div></div>';
+    +'<div class="seg themeseg" role="group" aria-label="المظهر">'+[["dark","غامق"],["light","فاتح"],["auto","زي الموبايل"]].map(function(x){return '<button data-act="theme" data-v="'+x[0]+'" aria-pressed="'+((S.theme||"dark")===x[0])+'">'+x[1]+'</button>';}).join("")+'</div>'+'<button class="linkbtn" data-act="unlock">'+(S.open?'رجّع القفل على الوحدات':'عارف المستوى؟ افتح كل الوحدات')+'</button></div></div>';
   return h;
 }
 function opts(st,ltr,two){
@@ -1218,7 +1221,7 @@ function failView(){
 var VIEWS={home:homeView,game:gameView,result:resultView,fail:failView,race:raceView,match:matchView,words:wordsView,backup:backupView,conj:conjView,ctable:ctableView,read:readView,rtext:rtextView,grammar:grammarView,stats:statsView};
 function render(){
   var app=document.getElementById("app");
-  app.innerHTML=(VIEWS[view]||homeView)();
+  applyTheme();app.innerHTML=(VIEWS[view]||homeView)();
   var inp=document.getElementById("ans");
   if(inp&&G&&G.phase==="ask"&&view==="game"){
     inp.focus();lastField=inp;
@@ -1262,6 +1265,7 @@ app.addEventListener("click",function(e){
   else if(a==="reveal"){G.reveal=true;var keep=document.getElementById("ans");var kv=keep?keep.value:"";render();var k2=document.getElementById("ans");if(k2){k2.value=kv;var c0=document.getElementById("chk");if(c0)c0.disabled=!kv.trim();}}
   else if(a==="wf"){WF.f=b.dataset.f;render();}
   else if(a==="gf"){GF.lv=b.dataset.f;render();}
+  else if(a==="theme"){S.theme=b.dataset.v;save();render();}
   else if(a==="goal"){S.goal=+b.dataset.g;save();render();}
   else if(a==="mt"){matchTap(b.dataset.s,b.dataset.id);}
   else if(a==="cjt"){
