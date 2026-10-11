@@ -1,0 +1,1399 @@
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#F2F1FA" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#0F0E26" media="(prefers-color-scheme: dark)"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="ملعب اللغات"><meta name="apple-mobile-web-app-status-bar-style" content="default"><link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"></head><body>
+<title>ملعب اللغات</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@500;700;800&family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: one narrow column. Home = stats, smart review, quick games, level ladder A0..B2.
+   Game = one question per screen with a sticky feedback bar. Extra views: words, backup, race, match. */
+:root{
+  --bg:#F2F1FA; --surface:#FFFFFF; --ink:#1A1744; --muted:#65628F; --line:#DAD8F0;
+  --accent:#4B4DED; --accent-deep:#3032B4; --accent-ink:#FFFFFF; --accent-soft:#E6E6FF;
+  --warm:#E86F1C; --good:#0D9468; --good-deep:#0A6F4E; --good-ink:#FFFFFF; --good-soft:#D8F4E9;
+  --bad:#D3303F; --bad-deep:#9B2230; --bad-ink:#FFFFFF; --bad-soft:#FFE2E5;
+  --font-display:'Baloo Bhaijaan 2','Cairo',system-ui,sans-serif;
+  --font-body:'Cairo',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F0E26; --surface:#1B1940; --ink:#EEEDFF; --muted:#9C9AC8; --line:#2E2C5E;
+    --accent:#7C84FF; --accent-deep:#4B52D6; --accent-ink:#0F0E26; --accent-soft:#25235A;
+    --warm:#FFA45E; --good:#35D3A2; --good-deep:#1E9C77; --good-ink:#07261C; --good-soft:#10382F;
+    --bad:#FF6B78; --bad-deep:#C2414E; --bad-ink:#3A0A10; --bad-soft:#44202A; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F0E26; --surface:#1B1940; --ink:#EEEDFF; --muted:#9C9AC8; --line:#2E2C5E;
+  --accent:#7C84FF; --accent-deep:#4B52D6; --accent-ink:#0F0E26; --accent-soft:#25235A;
+  --warm:#FFA45E; --good:#35D3A2; --good-deep:#1E9C77; --good-ink:#07261C; --good-soft:#10382F;
+  --bad:#FF6B78; --bad-deep:#C2414E; --bad-ink:#3A0A10; --bad-soft:#44202A; color-scheme:dark;
+}
+body{background:var(--bg);color:var(--ink);font:400 16px/1.6 var(--font-body)}
+*{box-sizing:border-box}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.wrap{max-width:640px;margin:0 auto;padding-inline:16px;padding-block:20px 48px}
+.ltr{direction:ltr;unicode-bidi:isolate}
+svg.i{width:1.25em;height:1.25em;flex:none;vertical-align:-0.2em}
+
+/* header */
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand h1{margin:0;font:800 1.7rem/1.2 var(--font-display)}
+.brand p{margin:0;color:var(--muted);font-size:.9rem}
+.seg{display:flex;gap:3px;padding:3px;background:var(--surface);border:2px solid var(--line);border-radius:14px}
+.seg button{border:0;background:none;padding:6px 16px;border-radius:11px;font-weight:700;cursor:pointer;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:18px}
+.stat{display:flex;align-items:center;gap:10px;background:var(--surface);border:2px solid var(--line);border-radius:16px;padding:10px 12px;min-width:0}
+.stat b{font:800 1.35rem/1 var(--font-display);font-variant-numeric:tabular-nums;display:block}
+.stat small{color:var(--muted);font-size:.78rem;display:block;line-height:1.3}
+.stat .i{width:1.7em;height:1.7em}
+.c-flame{color:var(--warm)} .c-xp{color:var(--accent)} .c-ok{color:var(--good)} .c-heart{color:var(--bad)}
+
+/* review card */
+.review{margin-top:16px;background:var(--accent);color:var(--accent-ink);border-radius:20px;padding:18px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.review h2{margin:0;font:800 1.15rem/1.3 var(--font-display)}
+.review p{margin:2px 0 0;opacity:.85;font-size:.9rem}
+.review.idle{background:var(--surface);color:var(--ink);border:2px solid var(--line)}
+.review.idle p{color:var(--muted);opacity:1}
+
+/* buttons */
+.btn{display:block;width:100%;font:700 1.1rem/1.2 var(--font-display);padding:13px 22px;border-radius:16px;border:0;border-bottom:5px solid var(--accent-deep);background:var(--accent);color:var(--accent-ink);cursor:pointer}
+.btn:active:not(:disabled){transform:translateY(3px);border-bottom-width:2px}
+.btn:disabled{background:var(--line);border-bottom-color:var(--line);color:var(--muted);cursor:not-allowed}
+.btn.good{background:var(--good);border-bottom-color:var(--good-deep);color:var(--good-ink)}
+.btn.bad{background:var(--bad);border-bottom-color:var(--bad-deep);color:var(--bad-ink)}
+.btn.light{background:var(--accent-ink);color:var(--accent);border-bottom-color:rgba(0,0,0,.25);width:auto}
+.btn.ghost{background:var(--surface);color:var(--accent);border:2px solid var(--line);border-bottom-width:5px}
+.linkbtn{background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;padding:6px}
+
+/* sections */
+.sec{margin:30px 0 0;font:800 1.2rem/1.3 var(--font-display)}
+.level{margin-top:30px}
+.lv-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.lv-code{font:800 2.1rem/1 var(--font-display);color:var(--accent);direction:ltr}
+.lv-name{font-weight:700}
+.lv-prog{margin-inline-start:auto;display:flex;align-items:center;gap:8px;color:var(--muted);font-size:.85rem;font-variant-numeric:tabular-nums}
+.mini{width:84px;height:8px;border-radius:9px;background:var(--line);overflow:hidden}
+.mini i{display:block;height:100%;background:var(--good)}
+.units{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:12px}
+.unit{text-align:start;display:flex;flex-direction:column;gap:4px;background:var(--surface);border:2px solid var(--line);border-bottom-width:5px;border-radius:18px;padding:12px 14px;cursor:pointer;min-width:0}
+.unit:active:not(:disabled){transform:translateY(3px);border-bottom-width:2px}
+.unit strong{font:700 1.05rem/1.3 var(--font-display)}
+.unit span{color:var(--muted);font-size:.82rem}
+.unit .row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.unit.done{border-color:var(--good)}
+.unit.locked,.unit:disabled{opacity:.55;cursor:not-allowed}
+.unit .go{color:var(--accent);font-weight:700;font-size:.85rem}
+.gt .row .i{width:1.5em;height:1.5em;color:var(--accent)}
+.foot{margin-top:28px;display:flex;flex-direction:column;align-items:center;gap:2px}
+.foot small{color:var(--muted)}
+
+/* game */
+.gtop{display:flex;align-items:center;gap:12px}
+.gtop .x,.gtop .snd{background:none;border:0;cursor:pointer;color:var(--muted);padding:4px;display:flex}
+.gtop .i{width:1.6em;height:1.6em}
+.gtop h2{margin:0;font:800 1.3rem var(--font-display)}
+.bar{flex:1;height:14px;background:var(--line);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:99px;transition:width .3s}
+.hearts{display:flex;align-items:center;gap:4px;color:var(--bad);font:800 1.1rem var(--font-display);font-variant-numeric:tabular-nums}
+.monrow{display:flex;align-items:center;gap:14px;margin-top:14px}
+.mon svg{width:76px;height:76px;display:block}
+.hp{flex:1;height:14px;background:var(--line);border-radius:99px;overflow:hidden}
+.hp i{display:block;height:100%;background:var(--bad);border-radius:99px;transition:width .35s}
+.mon.hit{animation:hit .45s}
+.mon.bite{animation:bite .45s}
+@keyframes hit{0%{transform:scale(1)}30%{transform:scale(.8) rotate(-8deg)}60%{transform:scale(1.06) rotate(5deg)}100%{transform:scale(1)}}
+@keyframes bite{0%,100%{transform:translateX(0)}25%{transform:translateX(-10px)}75%{transform:translateX(10px)}}
+.stage{min-height:62vh;display:flex;flex-direction:column;gap:14px;padding-block:22px 24px}
+.tag{align-self:flex-start;background:var(--accent-soft);color:var(--accent);font-weight:700;font-size:.8rem;padding:2px 12px;border-radius:99px}
+.prompt{margin:0;font:700 1.3rem/1.4 var(--font-display)}
+.wordcard{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;background:var(--surface);border:2px solid var(--line);border-radius:20px;padding:22px 16px;text-align:center}
+.word{font:800 2.2rem/1.25 var(--font-display);direction:ltr;overflow-wrap:anywhere;min-width:0}
+.word.ar{direction:rtl;font-size:1.9rem}
+.word.sm{font-size:1.7rem}
+.word b{color:var(--good)}
+.blank{display:inline-block;min-width:3.2ch;border-bottom:4px solid var(--accent);vertical-align:baseline;margin-inline:2px}
+.big .word{font-size:2.8rem}
+.meaning{margin:0;text-align:center;font:700 1.5rem/1.4 var(--font-display);color:var(--muted)}
+.note{background:var(--accent-soft);border-radius:20px;padding:20px;font-size:1.1rem;line-height:1.8}
+.spk{background:var(--accent-soft);color:var(--accent);border:0;border-radius:50%;width:48px;height:48px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none}
+.spk .i{width:1.5em;height:1.5em}
+.opts{display:grid;gap:10px}
+.opts.two{grid-template-columns:1fr 1fr}
+.opt{background:var(--surface);border:2px solid var(--line);border-bottom-width:5px;border-radius:16px;padding:13px 14px;font-size:1.08rem;font-weight:600;cursor:pointer;text-align:center;overflow-wrap:anywhere}
+.opt.sel{border-color:var(--accent);background:var(--accent-soft)}
+.opt.right{border-color:var(--good);background:var(--good-soft)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.field{width:100%;font:600 1.35rem var(--font-body);padding:14px 16px;border:2px solid var(--line);border-radius:16px;background:var(--surface);color:var(--ink);direction:ltr;text-align:start}
+.field.area{font:500 .8rem/1.4 ui-monospace,Menlo,Consolas,monospace;min-height:110px;resize:vertical;word-break:break-all}
+.accs{display:flex;flex-wrap:wrap;gap:6px;direction:ltr}
+.accs button{min-width:42px;padding:6px 10px;border-radius:10px;border:2px solid var(--line);border-bottom-width:4px;background:var(--surface);font:700 1.05rem var(--font-body);cursor:pointer}
+.slots{display:flex;flex-wrap:wrap;gap:8px;min-height:64px;padding:10px;border:2px dashed var(--line);border-radius:16px;direction:ltr;align-content:flex-start}
+.bank{display:flex;flex-wrap:wrap;gap:8px;direction:ltr;justify-content:center}
+.tok{padding:8px 14px;border:2px solid var(--line);border-bottom-width:4px;border-radius:12px;background:var(--surface);font-size:1.1rem;font-weight:600;cursor:pointer}
+.tok.used{opacity:.25;pointer-events:none}
+.reveal{align-self:center}
+.fbbar{position:sticky;bottom:0;margin-inline:-16px;padding:14px 16px calc(14px + env(safe-area-inset-bottom,0px));background:var(--bg);border-top:2px solid var(--line)}
+.fbbar.ok{background:var(--good-soft);border-top-color:var(--good)}
+.fbbar.no{background:var(--bad-soft);border-top-color:var(--bad)}
+.fbbar h3{margin:0 0 2px;font:800 1.2rem var(--font-display)}
+.fbbar.ok h3{color:var(--good)} .fbbar.no h3{color:var(--bad)}
+.fbbar p{margin:0 0 10px;font-size:.95rem}
+
+/* race + match */
+.rtime{font:800 1.4rem var(--font-display);font-variant-numeric:tabular-nums;min-width:2ch;text-align:center}
+.score{background:var(--accent-soft);color:var(--accent);border-radius:99px;padding:2px 14px;font:800 1.1rem var(--font-display);font-variant-numeric:tabular-nums}
+.hint{margin:0;text-align:center;color:var(--muted);font-size:.9rem}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;direction:ltr}
+.mcol{display:grid;gap:10px;align-content:start}
+.mcard{background:var(--surface);border:2px solid var(--line);border-bottom-width:5px;border-radius:16px;padding:14px 8px;font-size:1.05rem;font-weight:700;cursor:pointer;text-align:center;overflow-wrap:anywhere;min-height:60px}
+.mcard.ar{direction:rtl}
+.mcard.sel{border-color:var(--accent);background:var(--accent-soft)}
+.mcard.ok{border-color:var(--good);background:var(--good-soft);opacity:.55;pointer-events:none}
+.mcard.bad{border-color:var(--bad);background:var(--bad-soft)}
+
+/* words */
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:2px solid var(--line);background:var(--surface);border-radius:99px;padding:3px 14px;font-weight:600;cursor:pointer;font-size:.9rem}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.wl{display:grid;gap:8px;margin-top:4px}
+.wrow{display:flex;align-items:center;gap:10px;background:var(--surface);border:2px solid var(--line);border-radius:14px;padding:8px 12px}
+.wrow .txt{flex:1;min-width:0}
+.wrow .t{font-weight:700;direction:ltr;text-align:start;overflow-wrap:anywhere}
+.wrow .a{color:var(--muted);font-size:.9rem}
+.wrow .lvb{font:700 .75rem var(--font-display);color:var(--muted);direction:ltr}
+.dots{display:flex;gap:3px;direction:ltr}
+.dots i{width:8px;height:8px;border-radius:50%;background:var(--line)}
+.dots i.on{background:var(--good)}
+.wrow .spk{width:36px;height:36px}
+.wrow .spk .i{width:1.1em;height:1.1em}
+.empty{text-align:center;color:var(--muted);padding:24px 0}
+
+/* backup */
+.bk h3{margin:22px 0 6px;font:800 1.1rem var(--font-display)}
+.bk p{margin:0 0 10px;color:var(--muted);font-size:.92rem}
+.msg{min-height:1.6em;margin:10px 0 0;font-weight:600}
+
+/* result */
+.result{text-align:center;display:flex;flex-direction:column;gap:16px;padding-block:40px 10px}
+.result h2{margin:0;font:800 2rem/1.2 var(--font-display)}
+.result .big-n{font:800 4.5rem/1 var(--font-display);color:var(--accent);font-variant-numeric:tabular-nums}
+.rgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.rgrid div{background:var(--surface);border:2px solid var(--line);border-radius:16px;padding:10px}
+.rgrid b{display:block;font:800 1.4rem var(--font-display);font-variant-numeric:tabular-nums}
+.rgrid small{color:var(--muted)}
+.acts{display:grid;gap:10px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+/* added: goal, tiles, conjugation, reading, grammar, stats */
+.goal{margin-top:14px;display:flex;align-items:center;gap:12px;background:var(--surface);border:2px solid var(--line);border-radius:18px;padding:12px 14px}
+.goal>.i{width:1.8em;height:1.8em;color:var(--warm)}
+.goal.hit{border-color:var(--good);background:var(--good-soft)}
+.goal.hit>.i{color:var(--good)}
+.gtxt{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px;text-align:start}
+.gtxt b{font:700 1rem/1.2 var(--font-display)}
+.gbar{display:block;height:10px;border-radius:99px;background:var(--line);overflow:hidden}
+.gbar i{display:block;height:100%;background:var(--warm);border-radius:99px;transition:width .4s}
+.goal.hit .gbar i{background:var(--good)}
+.gnum{font:800 1.05rem var(--font-display);font-variant-numeric:tabular-nums;direction:ltr;color:var(--muted)}
+.lead{color:var(--muted);margin:12px 0 0;font-size:.95rem}
+.sub{margin:22px 0 10px;font:800 1.1rem var(--font-display)}
+.lvtag{display:inline-block;font:700 .72rem/1.5 var(--font-display);background:var(--accent-soft);color:var(--accent);border-radius:6px;padding:0 6px;direction:ltr;vertical-align:middle}
+.chip[aria-pressed="true"] .lvtag{background:var(--accent-ink);color:var(--accent)}
+.dim{color:var(--muted);font-size:.85em}
+.chip[aria-pressed="true"] .dim{color:inherit;opacity:.8}
+.chips.tenses .chip{padding:5px 12px}
+.verbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-top:10px}
+.vb{display:flex;flex-direction:column;align-items:flex-start;gap:2px;background:var(--surface);border:2px solid var(--line);border-bottom-width:4px;border-radius:14px;padding:9px 12px;cursor:pointer;text-align:start;min-width:0}
+.vb b{font:700 1.1rem/1.3 var(--font-body)}
+.vb span{color:var(--muted);font-size:.8rem;overflow-wrap:anywhere}
+.vbar{display:block;width:100%;height:5px;border-radius:9px;background:var(--line);overflow:hidden;margin-top:4px}
+.vbar i{display:block;height:100%;background:var(--good)}
+.tip{margin-top:14px;background:var(--accent-soft);border-radius:16px;padding:12px 16px}
+.tip b{font:700 1.05rem var(--font-display)}
+.tip p{margin:4px 0 0;font-size:.95rem;line-height:1.75}
+.ctab{display:grid;gap:8px;margin-top:14px}
+.crow{display:flex;align-items:center;gap:12px;background:var(--surface);border:2px solid var(--line);border-radius:14px;padding:8px 12px;direction:ltr}
+.crow .cp{min-width:7.5em;color:var(--muted);font-weight:600;font-size:.95rem}
+.crow .cf{flex:1;font:700 1.3rem var(--font-body);min-width:0;overflow-wrap:anywhere}
+.crow .spk{width:38px;height:38px}
+.crow .spk .i{width:1.1em;height:1.1em}
+.crow.ok{border-color:var(--good);background:var(--good-soft)}
+.crow.near{border-color:var(--warm)}
+.crow.no{border-color:var(--bad);background:var(--bad-soft)}
+.cin{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.field.sm{font-size:1.1rem;padding:8px 12px;border-radius:12px}
+.corr{font-weight:700;color:var(--good);font-size:.95rem}
+.acts.two{grid-template-columns:1fr 1fr}
+.cjq{flex-direction:column;gap:10px}
+.cjmeta{display:flex;flex-wrap:wrap;justify-content:center;align-items:baseline;gap:6px 12px}
+.cjmeta .tense{background:var(--accent-soft);color:var(--accent);border-radius:99px;padding:1px 12px;font-weight:700;font-size:.85rem}
+.cjmeta .inf{font:800 1.25rem var(--font-body)}
+.cjmeta .mean{color:var(--muted);font-size:.9rem}
+.cjq .pr{color:var(--muted)}
+.spk.slow{font:800 .85rem var(--font-display);width:48px;height:48px}
+.ractions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.btn.sm{width:auto;font-size:.95rem;padding:8px 14px;border-radius:12px;display:inline-flex;align-items:center;gap:6px;border-bottom-width:4px}
+.rtext{margin-top:14px;background:var(--surface);border:2px solid var(--line);border-radius:18px;padding:18px;font:500 1.15rem/1.9 var(--font-body);text-align:left;max-width:65ch}
+.rtext.hidden{color:var(--muted);text-align:center;font-size:1rem;direction:rtl}
+.gloss{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.gloss span{background:var(--accent-soft);border-radius:10px;padding:3px 10px;font-size:.88rem}
+.rq{margin-top:18px}
+.rq p{margin:0 0 8px;font-weight:700}
+.glist{display:grid;gap:10px;margin-top:10px}
+.gitem{background:var(--surface);border:2px solid var(--line);border-radius:16px;padding:12px 16px}
+.gitem b{font:700 1.05rem var(--font-display)}
+.gitem p{margin:4px 0 0;line-height:1.8}
+.gitem.tense{border-color:var(--accent);border-style:dashed}
+.panel{margin-top:16px;background:var(--surface);border:2px solid var(--line);border-radius:20px;padding:16px}
+.ph{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.ph h3{margin:0;font:800 1.1rem var(--font-display)}
+.chart{width:100%;height:auto;display:block;direction:ltr}
+.chart .axis{stroke:var(--line);stroke-width:2}
+.chart .goalline{stroke:var(--warm);stroke-width:1.5;stroke-dasharray:5 4}
+.chart .glab{fill:var(--warm);font:700 11px var(--font-body)}
+.chart .bar{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5}
+.chart .bar.hit{fill:var(--good);stroke:var(--good)}
+.chart .bar.today{fill:var(--accent);stroke:var(--accent)}
+.chart .bar.today.hit{fill:var(--good);stroke:var(--good-deep)}
+.chart .val{fill:var(--ink);font:700 12px var(--font-body)}
+.chart .day{fill:var(--muted);font:600 11px var(--font-body)}
+.chart .day.t{fill:var(--ink);font-weight:800}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:10px}
+.kpis div{display:flex;flex-direction:column;gap:1px;background:var(--bg);border-radius:12px;padding:8px 10px;min-width:0}
+.kpis small{color:var(--muted);font-size:.78rem}
+.kpis b{font:800 1.3rem/1.2 var(--font-display);font-variant-numeric:tabular-nums}
+.kpis span{font-size:.75rem;font-weight:700}
+.up{color:var(--good)} .down{color:var(--bad)}
+@media (max-width:480px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.lvbars{display:grid;gap:10px}
+.lvb2{display:grid;grid-template-columns:2.6em 1fr 4.5em;align-items:center;gap:10px}
+.lvb2.wide{grid-template-columns:minmax(6em,9em) 1fr 3em}
+.lvb2>span:first-child{font:800 1rem var(--font-display);overflow-wrap:anywhere}
+.lvb2 .track{height:12px;border-radius:99px;background:var(--line);overflow:hidden}
+.lvb2 .track i{display:block;height:100%;background:var(--good);border-radius:99px}
+.lvb2 .track.warn i{background:var(--warm)}
+.lvb2 .num{font-variant-numeric:tabular-nums;color:var(--muted);font-size:.85rem;direction:ltr;text-align:end}
+.miss{display:grid;gap:8px}
+.mrow{display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line);padding-bottom:8px}
+.mrow:last-child{border-bottom:0}
+.mrow .txt{flex:1;min-width:0}
+.mrow .t{font-weight:700;text-align:start;overflow-wrap:anywhere}
+.mrow .a{color:var(--muted);font-size:.88rem}
+.mbar{width:70px;height:8px;border-radius:9px;background:var(--line);overflow:hidden;flex:none}
+.mbar i{display:block;height:100%;background:var(--bad)}
+.mn{font:800 1rem var(--font-display);color:var(--bad);min-width:2.2em;text-align:center;font-variant-numeric:tabular-nums}
+.mrow .spk{width:36px;height:36px}
+.mrow .spk .i{width:1.1em;height:1.1em}
+
+</style>
+
+<div id="app" dir="rtl" lang="ar"></div>
+<script>
+(function(){
+"use strict";
+var KEY="mal3ab-lughat-v1";
+var LV=["A0","A1","A2","B1","B2"];
+var LV_AR={A0:"البداية من الصفر",A1:"مبتدئ",A2:"أساسي",B1:"متوسط",B2:"فوق المتوسط"};
+var FR=[
+["A0","تحيات",["Bonjour|صباح الخير / مرحبا","Bonsoir|مساء الخير","Salut|أهلاً (بين الأصحاب)","Merci|شكراً","S'il vous plaît|من فضلك","Oui|نعم","Non|لا","Au revoir|مع السلامة"],"Bonjour بتتقال طول النهار، وBonsoir من بعد العصر. استخدم Salut مع أصحابك بس، ومع الغريب قول Bonjour."],
+["A0","أرقام ١ – ١٠",["un|واحد","deux|اثنين","trois|ثلاثة","quatre|أربعة","cinq|خمسة","six|ستة","sept|سبعة","huit|ثمانية","neuf|تسعة","dix|عشرة"],"في الفرنساوي الحرف الأخير غالباً مبيتنطقش، بس بيرجع لما الكلمة اللي بعده تبدأ بحرف متحرك: deux amis بتتنطق «دُوزامي»."],
+["A0","ألوان",["rouge|أحمر","bleu|أزرق","vert|أخضر","jaune|أصفر","noir|أسود","blanc|أبيض","rose|وردي","orange|برتقالي"],"الصفة بتيجي بعد الاسم: une voiture rouge (عربية حمرا). وبتتأنث مع المؤنث: blanc للمذكر وblanche للمؤنث."],
+["A0","الضمائر",["je|أنا","tu|إنت (بين الأصحاب)","il|هو","elle|هي","nous|إحنا","vous|حضرتك / إنتو","ils|هم","elles|هنّ (بنات)"],"tu للأصحاب والصغار، وvous للكبار والغرباء وللجمع. وبعد الضمير بييجي الفعل: je suis، tu es، il est."],
+["A0","جسم الإنسان",["la tête|الراس","la main|الإيد","le pied|الرجل (القدم)","l'œil|العين","le nez|الأنف","la bouche|الفم","le bras|الدراع","le dos|الضهر"],"كل اسم في الفرنساوي مذكر أو مؤنث: le للمذكر وla للمؤنث. احفظ الاسم مع الأداة دايماً: la main مش main بس."],
+["A0","في البيت",["la maison|البيت","la porte|الباب","la fenêtre|الشباك","la table|الترابيزة","la chaise|الكرسي","le lit|السرير","la cuisine|المطبخ","la chambre|أوضة النوم"],"الأدوات: le للمذكر، la للمؤنث، les للجمع، وl' قدام الحرف المتحرك: l'école."],
+["A0","كلمات مهمة",["ici|هنا","là|هناك","très|جداً","beaucoup|كتير","un peu|شوية","grand|كبير","petit|صغير","bon|كويس"],"très بتيجي قبل الصفة: très bon (كويس جداً). وbeaucoup بتيجي بعد الفعل: je mange beaucoup."],
+["A1","العائلة",["la mère|الأم","le père|الأب","le frère|الأخ","la sœur|الأخت","le fils|الابن","la fille|البنت","l'ami|الصديق","la famille|العيلة"],"mon وma وmes معناها «بتاعي»: mon père (أبويا)، ma mère (أمي)، mes frères (إخواتي)."],
+["A1","أكل وشرب",["l'eau|الماية","le pain|العيش","le café|القهوة","le lait|اللبن","la pomme|التفاحة","le fromage|الجبنة","le poulet|الفراخ","le riz|الأرز"],"لما تقصد «شوية من» استخدم du أو de la: je veux du pain، je veux de la salade. ده مفيش زيه في العربي فاحفظه كده."],
+["A1","جمل التعارف",["Je m'appelle Ahmed|اسمي أحمد","Comment vous appelez-vous ?|اسمك إيه؟","Je suis égyptien|أنا مصري","J'habite au Caire|أنا ساكن في القاهرة","Je ne comprends pas|أنا مش فاهم","Parlez-vous anglais ?|بتتكلم إنجليزي؟","Enchanté|تشرفت بمعرفتك","Comment ça va ?|إزيك؟"],"للنفي حط ne قبل الفعل وpas بعده: je ne comprends pas. وفي الكلام السريع بيقولوا: je comprends pas."],
+["A1","أفعال أساسية",["être|يكون / يبقى","avoir|يملك / عنده","aller|يروح","faire|يعمل","vouloir|يريد","pouvoir|يقدر","manger|ياكل","boire|يشرب"],"أهم فعلين: être (je suis, tu es, il est, nous sommes, vous êtes, ils sont) وavoir (j'ai, tu as, il a). احفظهم قبل أي حاجة."],
+["A1","المهن",["le médecin|الدكتور","l'ingénieur|المهندس","le professeur|المدرّس","l'infirmière|الممرضة","le chauffeur|السواق","le cuisinier|الطباخ","l'avocat|المحامي","l'artiste|الفنان"],"تقدر تقول je suis médecin من غير أداة. والمؤنث غالباً بيزيد e: un étudiant / une étudiante."],
+["A1","الطقس والفصول",["le soleil|الشمس","la pluie|المطر","le vent|الريح","la neige|التلج","l'hiver|الشتا","l'été|الصيف","froid|بارد","chaud|سخن / حر"],"للطقس استخدم il fait: il fait froid (الجو بارد)، il fait chaud (حر). والمطر: il pleut، والتلج: il neige."],
+["A1","في المطعم",["Une table pour deux|ترابيزة لاتنين","Le menu, s'il vous plaît|المنيو من فضلك","Je voudrais de l'eau|عايز ماية","Avez-vous du thé ?|عندكم شاي؟","C'est délicieux|ده لذيذ","Sans sucre, s'il vous plaît|من غير سكر لو سمحت","L'addition, s'il vous plaît|الحساب من فضلك","Je suis végétarien|أنا نباتي"],"je voudrais معناها «أحب» وهي أهدى من je veux. استخدمها في أي طلب: je voudrais un café."],
+["A2","المدينة",["la rue|الشارع","la gare|محطة القطار","l'hôpital|المستشفى","le marché|السوق","à gauche|على الشمال","à droite|على اليمين","tout droit|على طول","près de|قريب من"],"للاتجاهات: tournez à gauche (لف شمال)، allez tout droit (امشي على طول)."],
+["A2","الوقت والأيام",["lundi|يوم الاثنين","mardi|يوم الثلاثاء","samedi|يوم السبت","demain|بكرة","hier|إمبارح","aujourd'hui|النهارده","le matin|الصبح","le soir|المسا"],"أيام الأسبوع مذكرة وبتتكتب بحرف صغير: lundi، mardi. وبتقول «يوم الاثنين» من غير أداة: lundi."],
+["A2","جمل يومية",["Je voudrais un café|عايز قهوة","Où est la gare ?|فين محطة القطار؟","Combien ça coûte ?|بكام ده؟","J'ai faim|أنا جعان","Je suis fatigué|أنا تعبان","Il fait chaud aujourd'hui|الجو حر النهارده","Quelle heure est-il ?|الساعة كام؟","Je vais au travail|أنا رايح الشغل"],"للسؤال ارفع صوتك في الآخر: tu viens ? أو ابدأ بـ est-ce que: est-ce que tu viens ?"],
+["A2","الملابس والتسوق",["la chemise|القميص","le pantalon|البنطلون","les chaussures|الجزمة","la robe|الفستان","cher|غالي","bon marché|رخيص","la taille|المقاس","essayer|يجرّب"],"الصفة بتتفق مع الاسم: un pantalon cher (مذكر)، une robe chère (مؤنث، زودنا e)."],
+["A2","عند الدكتور",["J'ai mal à la tête|عندي صداع","J'ai de la fièvre|عندي سخونية","Où est la pharmacie ?|فين الصيدلية؟","Je me sens mal|حاسس إني تعبان","J'ai besoin d'un médecin|محتاج دكتور","Appelez une ambulance|اطلب الإسعاف","Je suis allergique à la pénicilline|عندي حساسية من البنسلين","Depuis quand avez-vous mal ?|من إمتى بتحس بالألم؟"],"للألم استخدم avoir mal à: j'ai mal à la tête. وà + le بتبقى au: j'ai mal au dos."],
+["A2","الماضي",["j'ai mangé|أكلت","j'ai bu|شربت","je suis allé|رحت","j'ai fait|عملت","j'ai vu|شفت","j'ai pris|خدت","j'ai compris|فهمت","j'ai parlé|اتكلمت"],"الماضي القريب = avoir أو être + اسم المفعول. معظم الأفعال مع avoir، وأفعال الحركة مع être وبتتأنث: je suis allée (بنت)."],
+["A2","الهوايات",["le sport|الرياضة","la musique|الموسيقى","le football|الكورة","lire|يقرا","nager|يسبح","courir|يجري","le cinéma|السينما","jouer|يلعب"],"للهوايات: j'aime + فعل: j'aime nager. ومع الرياضة: jouer au football (à + le = au)."],
+["B1","الشغل والدراسة",["le travail|الشغل","le bureau|المكتب","la réunion|الاجتماع","l'entreprise|الشركة","l'étudiant|الطالب","l'examen|الامتحان","apprendre|يتعلّم","le projet|المشروع"],"لوصف شغلك: je travaille dans une entreprise (في شركة) أو je travaille comme ingénieur (كمهندس)."],
+["B1","السفر",["le billet|التذكرة","l'aéroport|المطار","la valise|الشنطة","réserver|يحجز","le retard|التأخير","l'hôtel|الفندق","le passeport|جواز السفر","voyager|يسافر"],"للطلب المهذب استخدم pouvez-vous: pouvez-vous m'aider ? (ممكن تساعدني؟). ده بيفرق جداً في السفر."],
+["B1","جمل الرأي",["À mon avis, c'est une bonne idée|في رأيي دي فكرة كويسة","Je ne suis pas d'accord|أنا مش موافق","J'ai l'intention de voyager l'année prochaine|ناوي أسافر السنة الجاية","Si j'avais le temps, je viendrais|لو كان عندي وقت كنت جيت","Il faut que je parte|لازم أمشي","Je me suis trompé|أنا غلطت","Depuis deux ans, j'étudie le français|بقالي سنتين بدرس فرنساوي","Pouvez-vous répéter, s'il vous plaît ?|ممكن تعيد من فضلك؟"],"الشرط غير الحقيقي: si + imparfait ← conditionnel. si j'avais le temps (imparfait)، je viendrais (conditionnel)."],
+["B1","التكنولوجيا",["l'ordinateur|الكمبيوتر","le téléphone|التليفون","l'application|التطبيق","le mot de passe|كلمة السر","télécharger|يحمّل","le réseau|الشبكة","le site web|الموقع","envoyer|يبعت"],"كلمات كتير قريبة من الإنجليزي: l'application، le réseau. بس خلي بالك من النوع، le أو la، لأن ده اللي بيغير باقي الجملة."],
+["B1","السكن",["louer|يأجّر / يستأجر","le loyer|الإيجار","le voisin|الجار","l'appartement|الشقة","déménager|ينقل بيته","le quartier|الحي","le propriétaire|صاحب العقار","le meuble|قطعة الأثاث"],"il faut + فعل معناها «لازم»: il faut payer le loyer. وlouer معناها يأجّر ويستأجر حسب السياق."],
+["B1","المشاعر",["content|مبسوط","triste|حزين","inquiet|قلقان","fier|فخور","en colère|غضبان","nerveux|متوتر","soulagé|مرتاح","surpris|متفاجئ"],"للمشاعر: je suis + صفة. والصفة بتتأنث مع المؤنث: content/contente، fier/fière."],
+["B1","خطط المستقبل",["Demain, je vais travailler|بكرة هشتغل","L'année prochaine, j'irai en France|السنة الجاية هروح فرنسا","Je pense que c'est possible|أعتقد إنه ممكن","Je viens de finir|لسه خالص حالاً","Je suis en train de manger|أنا باكل دلوقتي","Il va pleuvoir|هتمطر","Je ferai de mon mieux|هعمل أقصى ما أقدر","Nous allons nous marier en été|هنتجوز في الصيف"],"المستقبل القريب: aller + فعل (je vais manger). والبعيد: je mangerai. وvenir de + فعل معناها «لسه عامل»: je viens de manger."],
+["B2","مجتمع وأخبار",["le gouvernement|الحكومة","la société|المجتمع","l'économie|الاقتصاد","l'environnement|البيئة","le chômage|البطالة","la décision|القرار","le débat|النقاش","la croissance|النمو"],"الأسماء اللي بتنتهي بـ -tion أو -té غالباً مؤنثة: la décision، la société. واللي بتنتهي بـ -ment غالباً مذكرة: le gouvernement."],
+["B2","كلمات الربط",["cependant|ومع ذلك","pourtant|رغم كده","donc|إذن","en effet|فعلاً","d'ailleurs|وبالمناسبة","afin de|علشان","malgré|رغم","par conséquent|وبالتالي"],"كلمات الربط بتبدأ بيها الجملة وبعدها فاصلة: cependant, il a accepté. وmalgré بعدها اسم: malgré la pluie."],
+["B2","تعبيرات متقدمة",["Il s'agit d'un sujet très délicat|ده موضوع حساس جداً","Je tiens à préciser ce point|أحب أوضّح النقطة دي","Bien que ce soit difficile, il faut essayer|مع إنه صعب لازم نحاول","Cela dépend des circonstances|ده بيعتمد على الظروف","On ne peut pas nier que le problème existe|مينفعش ننكر إن المشكلة موجودة","Ce n'est pas la fin du monde|دي مش نهاية العالم","Il vaut mieux prévenir que guérir|الوقاية خير من العلاج","Quoi qu'il arrive, je reste optimiste|أياً كان اللي يحصل أنا متفائل"],"bien que + subjonctif: bien que ce soit difficile. استخدام الـ subjonctif بعد bien que من أوضح علامات مستوى B2."],
+["B2","البيئة",["le réchauffement climatique|الاحتباس الحراري","la pollution|التلوث","les énergies renouvelables|الطاقة المتجددة","le déchet|النفاية","la sécurité|الأمن","la santé publique|الصحة العامة","durable|مستدام","la ressource|المورد"],"الكلمات اللي بتنتهي بـ -ment غالباً مذكرة: le réchauffement، l'environnement، le gouvernement."],
+["B2","القانون والسياسة",["la loi|القانون","le droit|الحق","les élections|الانتخابات","voter|ينتخب","le citoyen|المواطن","le parlement|البرلمان","la liberté|الحرية","la justice|العدالة"],"la loi قانون معين، وle droit الحق أو القانون كعلم. نقول: le droit de vote (حق التصويت)."],
+["B2","الجدل وإبداء الرأي",["Je suis convaincu que c'est la meilleure solution|أنا مقتنع إنها أحسن حل","D'un côté, c'est utile, de l'autre, c'est dangereux|من ناحية مفيد ومن ناحية خطر","Il est indéniable que les choses changent|مفيش شك إن الأمور بتتغير","Cela ne me semble pas réaliste|ده مش باين لي واقعي","Je partage votre point de vue|أنا متفق مع وجهة نظرك","Permettez-moi de nuancer ce propos|اسمح لي أخفف من حدة الكلام ده","Pour résumer, il faut agir vite|باختصار لازم نتصرف بسرعة","Tout compte fait, je reste prudent|في الآخر أنا لسه حذر"],"للجدل المهذب: permettez-moi de + فعل. وللمقارنة: d'un côté... de l'autre. احفظ التعبيرات دي كقوالب جاهزة."],
+["B2","تعبيرات اصطلاحية",["Poser un lapin|يخلف ميعاده","Avoir le cafard|يبقى زهقان","Coûter les yeux de la tête|يبقى غالي أوي","Tomber dans les pommes|يغمى عليه","Un coup de foudre|حب من أول نظرة","Passer l'éponge|يعدّي ويسامح","Mettre son grain de sel|يدخل في اللي مالوش فيه","Casser les pieds à quelqu'un|يزهّق حد"],"التعبيرات الاصطلاحية مبتتترجمش حرفياً: poser un lapin حرفياً «يحط أرنب» ومعناها يخلف الميعاد. احفظ المعنى مش الكلمات."]
+];
+var ES=[
+["A0","تحيات",["Hola|مرحبا","Buenos días|صباح الخير","Buenas tardes|مساء الخير (بعد الضهر)","Buenas noches|مساء الخير / تصبح على خير","Gracias|شكراً","Por favor|من فضلك","De nada|عفواً","Adiós|مع السلامة"],"Buenos días للصبح، وBuenas tardes من الضهر لحد المغرب، وBuenas noches بالليل. والحرف H في hola مبيتنطقش."],
+["A0","أرقام ١ – ١٠",["uno|واحد","dos|اثنين","tres|ثلاثة","cuatro|أربعة","cinco|خمسة","seis|ستة","siete|سبعة","ocho|ثمانية","nueve|تسعة","diez|عشرة"],"uno بتتحول لـ un قبل الاسم المذكر: un libro (كتاب)، وuna قبل المؤنث: una casa (بيت)."],
+["A0","ألوان",["rojo|أحمر","azul|أزرق","verde|أخضر","amarillo|أصفر","negro|أسود","blanco|أبيض","rosa|وردي","naranja|برتقالي"],"الصفة بعد الاسم وبتتفق معاه: un coche rojo، una casa roja. وazul وverde مبيتغيروش للمؤنث."],
+["A0","الضمائر",["yo|أنا","tú|إنت","usted|حضرتك","él|هو","ella|هي","nosotros|إحنا","ustedes|حضراتكم / إنتو","ellos|هم"],"في الإسباني غالباً بنشيل الضمير لأن آخر الفعل بيبين مين بيتكلم: hablo معناها «أنا بتكلم». وusted للاحترام."],
+["A0","جسم الإنسان",["la cabeza|الراس","la mano|الإيد","el pie|الرجل (القدم)","el ojo|العين","la nariz|الأنف","la boca|الفم","el brazo|الدراع","la espalda|الضهر"],"غالباً الاسم اللي بينتهي بـ o مذكر وبـ a مؤنث، بس فيه استثناءات: la mano مؤنثة رغم الـ o."],
+["A0","في البيت",["la casa|البيت","la puerta|الباب","la ventana|الشباك","la mesa|الترابيزة","la silla|الكرسي","la cama|السرير","la cocina|المطبخ","el dormitorio|أوضة النوم"],"للجمع زوّد s أو es: la puerta ← las puertas، la mesa ← las mesas."],
+["A0","كلمات مهمة",["aquí|هنا","allí|هناك","muy|جداً","mucho|كتير","un poco|شوية","grande|كبير","pequeño|صغير","bueno|كويس"],"muy بتيجي قبل الصفة: muy bueno (كويس جداً). وmucho بتيجي بعد الفعل: como mucho، أو قبل الاسم: mucho trabajo."],
+["A1","العائلة",["la madre|الأم","el padre|الأب","el hermano|الأخ","la hermana|الأخت","el hijo|الابن","la hija|البنت","el amigo|الصديق","la familia|العيلة"],"mi وmis معناها «بتاعي»: mi padre (أبويا)، mis padres (والديا). وsu معناها بتاعه أو بتاعها أو بتاعهم."],
+["A1","أكل وشرب",["el agua|الماية","el pan|العيش","el café|القهوة","la leche|اللبن","la manzana|التفاحة","el queso|الجبنة","el pollo|الفراخ","el arroz|الأرز"],"لما تطلب كمية غير محددة ماتحطش أداة: quiero pan، quiero agua. والأداة بتتحط لما تقصد حاجة معينة: el pan."],
+["A1","جمل التعارف",["Me llamo Ahmed|اسمي أحمد","¿Cómo te llamas?|اسمك إيه؟","Soy egipcio|أنا مصري","Vivo en El Cairo|أنا ساكن في القاهرة","No entiendo|أنا مش فاهم","¿Hablas inglés?|بتتكلم إنجليزي؟","Mucho gusto|تشرفت بمعرفتك","¿Cómo estás?|إزيك؟"],"للنفي حط no قبل الفعل: no entiendo. وفي الأسئلة بتحط ¿ في أول الجملة و? في آخرها."],
+["A1","أفعال أساسية",["ser|يكون (صفة دائمة)","estar|يكون (حالة أو مكان)","tener|يملك / عنده","ir|يروح","hacer|يعمل","querer|يريد","poder|يقدر","comer|ياكل"],"ser للهوية والصفات الدائمة: soy egipcio. وestar للحالة والمكان: estoy cansado، estoy en casa. الفرق ده من أهم حاجات الإسباني."],
+["A1","المهن",["el médico|الدكتور","el ingeniero|المهندس","el profesor|المدرّس","la enfermera|الممرضة","el conductor|السواق","el cocinero|الطباخ","el abogado|المحامي","el artista|الفنان"],"المهن بتتغير للمؤنث: el médico / la médica، el profesor / la profesora. وبعد ser من غير أداة: soy médico."],
+["A1","الطقس والفصول",["el sol|الشمس","la lluvia|المطر","el viento|الريح","la nieve|التلج","el invierno|الشتا","el verano|الصيف","el frío|البرد","el calor|الحر"],"للطقس استخدم hace + اسم: hace calor (الجو حر)، hace frío (بارد). وللمطر: llueve، وللتلج: nieva."],
+["A1","في المطعم",["Una mesa para dos|ترابيزة لاتنين","La carta, por favor|المنيو من فضلك","Quisiera agua|عايز ماية","¿Tienen té?|عندكم شاي؟","Está delicioso|ده لذيذ","Sin azúcar, por favor|من غير سكر لو سمحت","La cuenta, por favor|الحساب من فضلك","Soy vegetariano|أنا نباتي"],"quisiera معناها «أحب» وهي أهدى من quiero. استخدمها في أي طلب: quisiera un café."],
+["A2","المدينة",["la calle|الشارع","la estación|المحطة","el hospital|المستشفى","el mercado|السوق","a la izquierda|على الشمال","a la derecha|على اليمين","todo recto|على طول","cerca de|قريب من"],"للاتجاهات: gire a la izquierda (لف شمال)، siga todo recto (امشي على طول). وa + el بتبقى al: voy al mercado."],
+["A2","الوقت والأيام",["lunes|يوم الاثنين","martes|يوم الثلاثاء","sábado|يوم السبت","ayer|إمبارح","hoy|النهارده","mañana|بكرة","por la mañana|الصبح","por la noche|بالليل"],"الأيام مذكرة وبتتكتب بحرف صغير: el lunes، el martes. وللتكرار: los lunes (كل اثنين). ومعنى mañana بيتحدد من الجملة: بكرة أو الصبح."],
+["A2","جمل يومية",["Quisiera un café|عايز قهوة","¿Dónde está la estación?|فين المحطة؟","¿Cuánto cuesta?|بكام ده؟","Tengo hambre|أنا جعان","Estoy cansado|أنا تعبان","Hoy hace calor|الجو حر النهارده","¿Qué hora es?|الساعة كام؟","Voy al trabajo|أنا رايح الشغل"],"للسؤال عن المكان استخدم ¿Dónde está...؟ وtengo hambre معناها «معايا جوع»، يعني بتستخدم tener مش estar."],
+["A2","الملابس والتسوق",["la camisa|القميص","los pantalones|البنطلون","los zapatos|الجزمة","el vestido|الفستان","caro|غالي","barato|رخيص","la talla|المقاس","probarse|يجرّب (لبس)"],"الصفة بتتفق مع الاسم: el vestido caro، la camisa cara، los zapatos caros."],
+["A2","عند الدكتور",["Me duele la cabeza|عندي صداع","Tengo fiebre|عندي سخونية","¿Dónde está la farmacia?|فين الصيدلية؟","Me siento mal|حاسس إني تعبان","Necesito un médico|محتاج دكتور","Llame a una ambulancia|اطلب الإسعاف","Soy alérgico a la penicilina|عندي حساسية من البنسلين","¿Desde cuándo le duele?|من إمتى بيوجعك؟"],"للألم: me duele + الجزء: me duele la cabeza. ولو الجزء جمع: me duelen los pies."],
+["A2","الماضي",["comí|أكلت","bebí|شربت","fui|رحت / كنت","hice|عملت","vi|شفت","tomé|خدت","entendí|فهمت","hablé|اتكلمت"],"ده الماضي البسيط (pretérito): hablé، comí. وفيه أفعال شاذة لازم تتحفظ زي fui وhice وvi."],
+["A2","الهوايات",["el deporte|الرياضة","la música|الموسيقى","el fútbol|الكورة","leer|يقرا","nadar|يسبح","correr|يجري","el cine|السينما","jugar|يلعب"],"للهوايات: me gusta + فعل: me gusta nadar. ومع الرياضة: jugar al fútbol."],
+["B1","الشغل والدراسة",["el trabajo|الشغل","la oficina|المكتب","la reunión|الاجتماع","la empresa|الشركة","el estudiante|الطالب","el examen|الامتحان","aprender|يتعلّم","el proyecto|المشروع"],"لوصف شغلك: trabajo en una empresa (في شركة). وللمستقبل القريب: ir a + فعل: voy a trabajar."],
+["B1","السفر",["el billete|التذكرة","el aeropuerto|المطار","la maleta|الشنطة","reservar|يحجز","el retraso|التأخير","el hotel|الفندق","el pasaporte|جواز السفر","viajar|يسافر"],"للطلب المهذب: ¿Podría ayudarme? (ممكن تساعدني؟). والتذكرة billete في إسبانيا وboleto في أمريكا اللاتينية."],
+["B1","جمل الرأي",["En mi opinión, es una buena idea|في رأيي دي فكرة كويسة","No estoy de acuerdo|أنا مش موافق","Pienso viajar el año que viene|ناوي أسافر السنة الجاية","Si tuviera tiempo, vendría|لو كان عندي وقت كنت جيت","Tengo que irme|لازم أمشي","Me equivoqué|أنا غلطت","Llevo dos años estudiando español|بقالي سنتين بدرس إسباني","¿Puede repetir, por favor?|ممكن تعيد من فضلك؟"],"الشرط غير الحقيقي: si + imperfecto del subjuntivo ← condicional. si tuviera tiempo، vendría."],
+["B1","التكنولوجيا",["el ordenador|الكمبيوتر","el teléfono|التليفون","la aplicación|التطبيق","la contraseña|كلمة السر","descargar|يحمّل","la red|الشبكة","el sitio web|الموقع","enviar|يبعت"],"كلمات كتير قريبة من الإنجليزي: la aplicación. بس احفظ النوع: el ordenador مذكر، la red وla contraseña مؤنث."],
+["B1","السكن",["alquilar|يأجّر / يستأجر","el alquiler|الإيجار","el vecino|الجار","el piso|الشقة","mudarse|ينقل بيته","el barrio|الحي","el dueño|صاحب العقار","el mueble|قطعة الأثاث"],"alquilar معناها يأجّر ويستأجر حسب السياق. والشقة piso في إسبانيا وapartamento في أمريكا اللاتينية."],
+["B1","المشاعر",["contento|مبسوط","triste|حزين","preocupado|قلقان","orgulloso|فخور","enfadado|غضبان","nervioso|متوتر","aliviado|مرتاح","sorprendido|متفاجئ"],"للمشاعر استخدم estar: estoy contento، estoy preocupado، لأنها حالة مؤقتة مش صفة دايمة."],
+["B1","خطط المستقبل",["Mañana voy a trabajar|بكرة هشتغل","El año que viene iré a España|السنة الجاية هروح إسبانيا","Creo que es posible|أعتقد إنه ممكن","Acabo de terminar|لسه خالص حالاً","Estoy comiendo ahora|أنا باكل دلوقتي","Va a llover|هتمطر","Haré todo lo posible|هعمل أقصى ما أقدر","Nos vamos a casar en verano|هنتجوز في الصيف"],"المستقبل القريب: ir a + فعل (voy a comer). والبسيط: comeré. وacabar de + فعل معناها «لسه عامل»: acabo de comer."],
+["B2","مجتمع وأخبار",["el gobierno|الحكومة","la sociedad|المجتمع","la economía|الاقتصاد","el medio ambiente|البيئة","el desempleo|البطالة","la decisión|القرار","el debate|النقاش","el crecimiento|النمو"],"الأسماء اللي بتنتهي بـ -ción أو -dad مؤنثة: la decisión، la sociedad. واللي بتنتهي بـ -miento مذكرة: el crecimiento."],
+["B2","كلمات الربط",["sin embargo|ومع ذلك","aunque|مع إن","por lo tanto|وبالتالي","de hecho|فعلاً","además|وكمان","a pesar de|رغم","para que|علشان","por eso|عشان كده"],"aunque + subjuntivo لما بتتكلم عن احتمال: aunque sea difícil. وaunque + indicativo لما تكون الحقيقة: aunque es difícil (صعب فعلاً)."],
+["B2","تعبيرات متقدمة",["Se trata de un tema muy delicado|ده موضوع حساس جداً","Quiero aclarar este punto|أحب أوضّح النقطة دي","Aunque sea difícil, hay que intentarlo|مع إنه صعب لازم نحاول","Eso depende de las circunstancias|ده بيعتمد على الظروف","No se puede negar que el problema existe|مينفعش ننكر إن المشكلة موجودة","No es el fin del mundo|دي مش نهاية العالم","Más vale prevenir que curar|الوقاية خير من العلاج","Pase lo que pase, sigo siendo optimista|أياً كان اللي يحصل أنا متفائل"],"Pase lo que pase تركيب subjuntivo متكرر معناه «أياً كان اللي يحصل». وعلى نفس الشكل: sea lo que sea."],
+["B2","البيئة",["el calentamiento global|الاحتباس الحراري","la contaminación|التلوث","las energías renovables|الطاقة المتجددة","el residuo|النفاية","la seguridad|الأمن","la salud pública|الصحة العامة","sostenible|مستدام","el recurso|المورد"],"الصفات اللي بتنتهي بـ -ble زي sostenible وrenovable مبتتغيرش للمؤنث: energía renovable، desarrollo sostenible."],
+["B2","القانون والسياسة",["la ley|القانون","el derecho|الحق","las elecciones|الانتخابات","votar|ينتخب","el ciudadano|المواطن","el parlamento|البرلمان","la libertad|الحرية","la justicia|العدالة"],"la ley قانون معين، وel derecho الحق أو القانون كعلم. نقول: el derecho al voto (حق التصويت)."],
+["B2","الجدل وإبداء الرأي",["Estoy convencido de que es la mejor solución|أنا مقتنع إنها أحسن حل","Por un lado es útil, por otro es peligroso|من ناحية مفيد ومن ناحية خطر","Es innegable que las cosas cambian|مفيش شك إن الأمور بتتغير","Eso no me parece realista|ده مش باين لي واقعي","Comparto su punto de vista|أنا متفق مع وجهة نظرك","Permítame matizar esa idea|اسمح لي أخفف من حدة الفكرة دي","En resumen, hay que actuar rápido|باختصار لازم نتصرف بسرعة","Después de todo, sigo siendo prudente|في الآخر أنا لسه حذر"],"es innegable que + indicativo لأنها حقيقة، مبتحتاجش subjuntivo. واحفظ التعبيرات دي كقوالب جاهزة."],
+["B2","تعبيرات اصطلاحية",["Meter la pata|يغلط غلطة كبيرة","Echar una mano|يساعد","Ser pan comido|يبقى سهل جداً","Tirar la toalla|يستسلم","Hablar por los codos|يرغي كتير","Estar en las nubes|يبقى سرحان","Costar un ojo de la cara|يبقى غالي أوي","Ponerse las pilas|يصحصح ويجتهد"],"التعبيرات الاصطلاحية مبتتترجمش حرفياً: meter la pata حرفياً «يحط الرجل» ومعناها يغلط غلطة. احفظ المعنى مش الكلمات."]
+];
+
+var FR_NEW=[
+["A0","أرقام ١١ – ٢٠",["onze|حداشر","douze|اتناشر","treize|تلتاشر","quatorze|أربعتاشر","quinze|خمستاشر","seize|ستاشر","dix-sept|سبعتاشر","dix-huit|تمنتاشر","dix-neuf|تسعتاشر","vingt|عشرين"],"من ١١ لـ ١٦ ليهم أسماء خاصة، ومن ١٧ بنقول dix + الرقم بشرطة: dix-sept، dix-huit. وvingt الـ t في آخرها مبتتنطقش."],
+["A0","حيوانات",["le chien|الكلب","le chat|القطة","l'oiseau|العصفورة","le cheval|الحصان","la vache|البقرة","le poisson|السمكة","le lion|الأسد","le mouton|الخروف"],"الجمع غالباً بيزيد s مبتتنطقش: les chiens. بس الكلمات اللي بتنتهي بـ -al بتبقى -aux: un cheval ← des chevaux، و-eau بتاخد x: des oiseaux."],
+["A0","أدوات السؤال",["qui|مين","quoi|إيه","où|فين","quand|إمتى","comment|إزاي","pourquoi|ليه","combien|كام / قد إيه","quel|أنهي"],"أداة السؤال تقدر تيجي في الآخر في الكلام العادي: tu vas où ? أو في الأول: où vas-tu ? وquel بيتغير: quelle heure (مؤنث)."],
+["A0","فواكه وخضار",["la banane|الموزة","l'orange|البرتقانة","la fraise|الفراولة","le raisin|العنب","la tomate|الطماطم","la pomme de terre|البطاطس","l'oignon|البصل","la carotte|الجزر"],"la pomme de terre حرفياً «تفاحة الأرض» يعني بطاطس. وفي الكلام بيقولوا عليها des patates كمان."],
+["A0","حروف الجر",["dans|جوه / في","sur|على","sous|تحت","avec|مع","sans|من غير","pour|علشان / لـ","devant|قدام","derrière|ورا"],"le chat est sous la table (القطة تحت الترابيزة). وà + le بتبقى au وde + le بتبقى du: je vais au marché."],
+["A0","الأضداد",["nouveau|جديد","vieux|قديم / عجوز","jeune|صغير في السن","beau|جميل","facile|سهل","difficile|صعب","long|طويل","court|قصير"],"شوية صفات بتيجي قبل الاسم: beau, jeune, vieux, nouveau, petit, grand, bon. مثلاً un beau jardin، une nouvelle voiture."],
+["A0","العشرات والمية",["zéro|صفر","trente|تلاتين","quarante|أربعين","cinquante|خمسين","soixante|ستين","soixante-dix|سبعين","quatre-vingts|تمانين","cent|مية"],"الفرنساوي في فرنسا بيعد ٧٠ = ستين وعشرة (soixante-dix) و٨٠ = أربعة عشرينات (quatre-vingts) و٩٠ = quatre-vingt-dix. في بلجيكا وسويسرا بيقولوا septante وnonante."],
+["A0","مجاملات يومية",["Excusez-moi|لو سمحت / عن إذنك","Pardon|آسف","De rien|العفو","Bien sûr|طبعاً","D'accord|ماشي / موافق","Bienvenue|أهلاً بيك","À demain|أشوفك بكرة","Bonne nuit|تصبح على خير"],"Excusez-moi لما تنادي حد أو تعدّي، وPardon لما تخبط في حد أو متسمعش كويس. وBonne nuit بس قبل النوم، غير كده Bonsoir."],
+["A1","الأيام والشهور",["mercredi|يوم الأربع","jeudi|يوم الخميس","vendredi|يوم الجمعة","dimanche|يوم الحد","janvier|يناير","mai|مايو","août|أغسطس","décembre|ديسمبر"],"الشهور بتتكتب بحرف صغير ومن غير أداة: en mai (في مايو). وللتاريخ: le 3 août. والأيام: le dimanche معناها «كل حد»."],
+["A1","الروتين اليومي",["je me réveille|بصحى","je me lève|بقوم من السرير","je me douche|باخد دش","je m'habille|بلبس","je prends le petit-déjeuner|بفطر","je rentre à la maison|برجع البيت","je dîne|باتعشى","je me couche|بنام (بدخل السرير)"],"الأفعال الانعكاسية بييجي معاها ضمير: je me lève، tu te lèves، il se lève، nous nous levons. وقدام الحرف المتحرك: je m'habille."],
+["A1","أفعال يومية",["venir|ييجي","partir|يمشي / يسافر","sortir|يخرج","prendre|ياخد","dormir|ينام","écrire|يكتب","ouvrir|يفتح","attendre|يستنى"],"prendre بيتقال على المواصلات والأكل كمان: prendre le bus (يركب الأتوبيس)، prendre un café (يشرب قهوة). وattendre من غير حرف جر: j'attends le bus."],
+["A1","الساعة",["Il est huit heures|الساعة تمانية","et demie|ونص","et quart|وربع","moins le quart|إلا ربع","midi|الضهر (١٢)","minuit|نص الليل","tôt|بدري","tard|متأخر"],"للساعة بنقول دايماً il est: il est trois heures et demie (تلاتة ونص). وللميعاد: à huit heures (الساعة تمانية)."],
+["A1","المواصلات",["le bus|الأتوبيس","le métro|المترو","le train|القطر","la voiture|العربية","le vélo|العجلة","l'avion|الطيارة","le taxi|التاكسي","à pied|ماشي على رجلي"],"مع المواصلات اللي بتركبها جوه بنقول en: en bus، en voiture، en train. ومع اللي بتركبها فوق: à vélo، à pied."],
+["A1","تعبيرات avoir",["j'ai soif|أنا عطشان","j'ai froid|أنا بردان","j'ai chaud|أنا حران","j'ai sommeil|أنا نعسان","j'ai peur|أنا خايف","j'ai raison|معايا حق","j'ai besoin de|محتاج","j'ai vingt ans|عندي عشرين سنة"],"الفرنساوي بيستخدم avoir مش être مع الإحساس والسن: j'ai froid مش je suis froid. وj'ai vingt ans معناها عمري ٢٠ سنة."],
+["A1","صفات الشخصية",["gentil|طيب","drôle|دمه خفيف","intelligent|ذكي","timide|خجول","sérieux|جد","paresseux|كسلان","travailleur|شغّيل","sympa|لطيف"],"المؤنث: gentil ← gentille، sérieux ← sérieuse، travailleur ← travailleuse. وsympa ثابتة للمذكر والمؤنث."],
+["A1","الفصل والمدرسة",["le livre|الكتاب","le stylo|القلم","le cahier|الكشكول","la question|السؤال","la réponse|الإجابة","écouter|يسمع","répéter|يعيد","le devoir|الواجب"],"في الفصل هتسمع كتير: écoutez (اسمعوا)، répétez (عيدوا)، ouvrez vos livres (افتحوا كتبكم). دي صيغة الأمر مع vous."],
+["A2","في الفندق",["J'ai une réservation au nom de Salah|عندي حجز باسم صلاح","Une chambre pour deux nuits|أوضة لليلتين","Le petit-déjeuner est compris ?|الفطار داخل في السعر؟","À quelle heure faut-il libérer la chambre ?|لازم أسيب الأوضة الساعة كام؟","La climatisation ne marche pas|التكييف مش شغال","Est-ce qu'il y a le wifi ?|فيه واي فاي؟","Je voudrais une chambre calme|عايز أوضة هادية","Pouvez-vous appeler un taxi ?|ممكن تطلب تاكسي؟"],"ne marche pas معناها «مش شغال» لأي جهاز. وest-ce qu'il y a معناها «هل فيه»: est-ce qu'il y a un parking ?"],
+["A2","التليفون والمواعيد",["Allô, c'est Ahmed|ألو، أنا أحمد","Je voudrais parler à Madame Martin|عايز أكلم مدام مارتان","Ne quittez pas|خليك معايا على الخط","Je vous rappelle plus tard|هكلمك تاني بعدين","On se voit samedi ?|نتقابل السبت؟","Je suis libre demain soir|أنا فاضي بكرة بالليل","Désolé, je ne suis pas disponible|آسف، مش فاضي","On se retrouve devant le café|نتقابل قدام الكافيه"],"on في الكلام بتعني «إحنا» وفعلها زي il: on se voit (نتقابل)، on y va (يلا بينا). هتسمعها أكتر من nous بكتير."],
+["A2","المطبخ والطبخ",["couper|يقطّع","ajouter|يضيف","mélanger|يقلّب / يخلط","faire cuire|يطبخ / يسوّي","le sel|الملح","le sucre|السكر","l'huile|الزيت","la poêle|الطاسة"],"في الوصفات بيستخدموا صيغة الأمر أو المصدر: coupez les oignons أو couper les oignons. وfaire cuire معناها «يسوّي على النار»."],
+["A2","زمان (imparfait)",["Quand j'étais petit|لما كنت صغير","Il faisait beau|الجو كان حلو","J'avais un chien|كان عندي كلب","Nous habitions à Alexandrie|كنا ساكنين في إسكندرية","Je jouais au foot tous les jours|كنت بلعب كورة كل يوم","C'était génial|كان تحفة","Il y avait beaucoup de monde|كان فيه زحمة","Je voulais devenir pilote|كنت عايز أبقى طيار"],"الـ imparfait للوصف في الماضي والعادة: je jouais (كنت بلعب). بتاخد جذع nous في المضارع (nous jouons ← jou-) وتزود: -ais, -ais, -ait, -ions, -iez, -aient."],
+["A2","المقارنة",["Il est plus grand que moi|هو أطول مني","Elle est moins âgée que son frère|هي أصغر من أخوها","C'est aussi cher qu'avant|غالي زي الأول","Ce restaurant est meilleur|المطعم ده أحسن","Il parle mieux que moi|بيتكلم أحسن مني","C'est le plus beau jour de ma vie|ده أحلى يوم في حياتي","J'ai autant de travail que toi|عندي شغل قدك","C'est pire qu'hier|ده أوحش من إمبارح"],"plus/moins/aussi + صفة + que. واستثناءات مهمة: bon ← meilleur (صفة)، bien ← mieux (حال). Il est meilleur بس il parle mieux."],
+["A2","الطبيعة",["la mer|البحر","la montagne|الجبل","la plage|البلاج","le fleuve|النهر","la forêt|الغابة","le désert|الصحرا","l'île|الجزيرة","le ciel|السما"],"le fleuve النهر اللي بيصب في البحر زي le Nil، وla rivière النهر الصغير. ونقول à la mer، à la montagne، à la plage."],
+["A2","شغل البيت",["faire le ménage|يروّق البيت","faire la vaisselle|يغسل المواعين","faire les courses|يشتري طلبات البيت","ranger|يرتّب","laver|يغسل","nettoyer|ينضف","sortir la poubelle|يطلّع الزبالة","repasser|يكوي"],"faire بيدخل في تعبيرات كتير: faire le ménage، faire les courses، faire la cuisine (يطبخ). احفظها كقطعة واحدة."],
+["A2","ضمائر المفعول",["Je le vois|بشوفه","Je la connais|أعرفها","Je lui parle|بكلمه / بكلمها","Je leur écris|بكتب لهم","Il me regarde|بيبص لي","Je t'aime|بحبك","Tu peux m'aider ?|ممكن تساعدني؟","Je les ai achetés hier|اشتريتهم إمبارح"],"الضمير بييجي قبل الفعل: je le vois مش je vois le. le/la/les للمفعول المباشر وlui/leur لما يكون فيه à: je parle à Marie ← je lui parle."],
+["B1","مقابلة شغل",["Parlez-moi de vous|كلمني عن نفسك","J'ai cinq ans d'expérience|عندي خبرة خمس سنين","Je suis motivé et organisé|أنا متحمس ومنظم","Pourquoi voulez-vous ce poste ?|ليه عايز الوظيفة دي؟","Mon point fort, c'est la communication|نقطة قوتي التواصل","Je travaille bien en équipe|بشتغل كويس في فريق","Quel est le salaire proposé ?|المرتب المعروض كام؟","Quand pourriez-vous commencer ?|تقدر تبدأ إمتى؟"],"في المقابلات استخدم vous دايماً، والـ conditionnel للأدب: pourriez-vous، je voudrais، j'aimerais."],
+["B1","الصحة ونمط الحياة",["la santé|الصحة","le régime|الرجيم","faire du sport|يلعب رياضة","le stress|التوتر","le sommeil|النوم","maigrir|يخس","grossir|يتخن","équilibré|متوازن"],"faire du / de la + رياضة: faire du vélo، faire de la natation. ولأفعال -ir زي maigrir: je maigris، nous maigrissons."],
+["B1","الإعلام",["le journal|الجورنال","l'article|المقالة","les informations|الأخبار","la chaîne|القناة","l'émission|البرنامج","le journaliste|الصحفي","la publicité|الإعلان","les réseaux sociaux|السوشيال ميديا"],"les infos اختصار للأخبار في الكلام. وle journal ممكن تبقى الجرنال أو نشرة الأخبار على التلفزيون: le journal de 20 heures."],
+["B1","العلاقات",["le couple|الكابل / الزوجين","se marier avec|يتجوز","divorcer|يطلّق","la confiance|الثقة","se disputer|يتخانق","se réconcilier|يتصالح","s'entendre bien avec|يتفاهم كويس مع","tomber amoureux de|يقع في حب"],"الأفعال الانعكاسية في الماضي بتاخد être: nous nous sommes disputés، elle s'est mariée. ونقول se marier avec مش se marier à."],
+["B1","حكاية في الماضي",["Je dormais quand le téléphone a sonné|كنت نايم لما التليفون رن","Il pleuvait, alors je suis resté chez moi|كانت بتمطر فقعدت في البيت","Pendant que je cuisinais, il est arrivé|وأنا بطبخ وصل","Soudain, j'ai entendu un bruit|فجأة سمعت صوت","D'abord, nous avons visité le musée|الأول زرنا المتحف","Ensuite, on est allés au restaurant|بعد كده رحنا المطعم","Finalement, tout s'est bien passé|في الآخر كل حاجة عدّت على خير","Il y a deux ans, j'ai déménagé|من سنتين نقلت"],"الـ imparfait للخلفية (كان بيحصل) والـ passé composé للحدث اللي قطعها: je dormais (خلفية) quand le téléphone a sonné (حدث)."],
+["B1","الشكوى وحل المشاكل",["Il y a un problème avec ma commande|فيه مشكلة في الأوردر بتاعي","Ça ne marche pas|ده مش شغال","Je voudrais être remboursé|عايز فلوسي ترجع","Je voudrais parler au responsable|عايز أكلم المسؤول","Ce n'est pas ce que j'ai commandé|ده مش اللي طلبته","Pouvez-vous l'échanger ?|ممكن تبدّله؟","J'attends depuis une heure|بقالي ساعة مستني","Qu'est-ce que vous proposez ?|إيه الحل اللي تقترحه؟"],"depuis + مضارع للحاجة اللي لسه مستمرة: j'attends depuis une heure (بقالي ساعة مستني). وce que معناها «اللي» كمفعول."],
+["B1","الفلوس والبنك",["l'argent|الفلوس","la banque|البنك","le compte|الحساب","payer|يدفع","économiser|يحوّش","emprunter|يستلف","la carte bancaire|الكارت البنكي","prêter|يسلّف"],"emprunter = ياخد سلفة، prêter = يدّي سلفة: j'emprunte de l'argent à la banque، la banque me prête de l'argent."],
+["B1","qui وque وoù وdont",["La femme qui parle est ma prof|الست اللي بتتكلم دي مدرّستي","Le livre que je lis est passionnant|الكتاب اللي بقراه ممتع","La ville où j'habite est calme|المدينة اللي ساكن فيها هادية","Le film dont je parle est sorti hier|الفيلم اللي بتكلم عنه نزل إمبارح","C'est le jour où je l'ai rencontrée|ده اليوم اللي قابلتها فيه","L'homme que tu as vu est mon voisin|الراجل اللي شفته ده جاري","Voici la maison dont je rêve|ده البيت اللي بحلم بيه","Ce qui m'intéresse, c'est l'histoire|اللي يهمني هو التاريخ"],"qui لما يكون فاعل، que لما يكون مفعول، où للمكان والزمان، dont بدل de + اسم: je parle du film ← le film dont je parle."],
+["B2","الاقتصاد والأعمال",["la bourse|البورصة","l'investissement|الاستثمار","la concurrence|المنافسة","le bénéfice|المكسب","la dette|الدين","l'inflation|التضخم","le salaire|المرتب","la crise|الأزمة"],"في الأخبار هتسمع: le taux de chômage (نسبة البطالة)، le pouvoir d'achat (القوة الشرائية)، la hausse des prix (ارتفاع الأسعار)."],
+["B2","العلوم والبحث",["la recherche|البحث العلمي","l'expérience|التجربة / الخبرة","la découverte|الاكتشاف","le chercheur|الباحث","l'hypothèse|الفرضية","prouver|يثبت","l'intelligence artificielle|الذكاء الاصطناعي","l'étude|الدراسة"],"l'expérience ليها معنيين: تجربة علمية أو خبرة: j'ai de l'expérience (عندي خبرة). وune étude montre que... تعبير ثابت في المقالات."],
+["B2","الثقافة والفن",["l'œuvre|العمل الفني","le roman|الرواية","l'exposition|المعرض","le spectacle|العرض","le patrimoine|التراث","le réalisateur|المخرج","la critique|النقد / الناقدة","le chef-d'œuvre|التحفة الفنية"],"le roman رواية، مش «رومانسي». وle chef-d'œuvre جمعها les chefs-d'œuvre. ونقول un film réalisé par... (فيلم من إخراج...)."],
+["B2","المبني للمجهول",["Le pont a été construit en 1990|الكوبري اتبنى سنة ١٩٩٠","Il est considéré comme un expert|بيعتبروه خبير","La loi sera votée la semaine prochaine|القانون هيتصوّت عليه الأسبوع الجاي","Ce livre est lu dans le monde entier|الكتاب ده بيتقري في العالم كله","On dit que la situation va changer|بيقولوا إن الوضع هيتغير","Le français se parle dans 30 pays|الفرنساوي بيتكلموه في ٣٠ دولة","La décision a été prise hier|القرار اتاخد إمبارح","Les résultats seront publiés demain|النتايج هتتنشر بكرة"],"المبني للمجهول = être + اسم المفعول متفق مع الفاعل: la décision a été prise. والفرنساوي بيحب يستخدم on بداله: on dit que..."],
+["B2","الكلام المنقول",["Il m'a dit qu'il viendrait|قال لي إنه هييجي","Elle m'a demandé si j'étais libre|سألتني إذا كنت فاضي","Il a expliqué qu'il avait raté le train|شرح إنه فاته القطر","Elle a affirmé que tout allait bien|أكّدت إن كل حاجة تمام","Il m'a demandé ce que je faisais|سألني بعمل إيه","Ils ont annoncé qu'ils se mariaient|أعلنوا إنهم هيتجوزوا","Je lui ai conseillé de partir|نصحته يمشي","Elle a promis qu'elle m'appellerait|وعدت إنها هتكلمني"],"لما الفعل الأساسي في الماضي الأزمنة بترجع خطوة: présent ← imparfait، futur ← conditionnel، passé composé ← plus-que-parfait."],
+["B2","الفرضيات والندم",["Si j'avais su, je serais venu|لو كنت أعرف كنت جيت","J'aurais dû t'écouter|كان المفروض أسمع كلامك","Il aurait pu réussir|كان ممكن ينجح","À ta place, je refuserais|لو مكانك كنت رفضت","Si tu étais venu, tu aurais adoré|لو كنت جيت كنت هتحبها جداً","J'aurais aimé voyager plus|كان نفسي أسافر أكتر","Au cas où il pleuvrait, prends un parapluie|لو حصل ومطرت خد شمسية","Sans ton aide, je n'aurais pas réussi|من غير مساعدتك مكنتش هنجح"],"الندم: si + plus-que-parfait ← conditionnel passé (si j'avais su, je serais venu). وj'aurais dû = كان المفروض. وau cas où بعدها conditionnel."],
+["B2","الكتابة الرسمية",["Je vous écris au sujet de ma candidature|بكتب لحضرتك بخصوص طلبي للوظيفة","Veuillez trouver ci-joint mon CV|مرفق السيرة الذاتية","Suite à notre conversation téléphonique|بناءً على مكالمتنا التليفونية","Je me permets de vous contacter|اسمح لي أتواصل معاك","Je reste à votre disposition|أنا تحت أمرك لأي استفسار","Dans l'attente de votre réponse|في انتظار ردك","Je vous prie d'agréer mes salutations distinguées|تفضّلوا بقبول فائق الاحترام","Cordialement|مع التحية"],"الإيميل الرسمي بيبدأ بـ Madame, Monsieur, ويخلص بـ Cordialement أو بالجملة الطويلة je vous prie d'agréer... وVeuillez أمر مهذب جداً."],
+["B2","الشغل والمسيرة",["la formation|التدريب / التعليم","le diplôme|الشهادة","l'embauche|التعيين","le licenciement|الرفد","la carrière|المسيرة المهنية","la compétence|المهارة","le stage|التدريب العملي","la promotion|الترقية"],"stage = تدريب عملي في شركة، وformation = كورس أو تعليم. وla promotion ممكن تبقى ترقية أو عرض تخفيضات في المحل."]
+];
+
+var ES_NEW=[
+["A0","أرقام ١١ – ٢٠",["once|حداشر","doce|اتناشر","trece|تلتاشر","catorce|أربعتاشر","quince|خمستاشر","dieciséis|ستاشر","diecisiete|سبعتاشر","dieciocho|تمنتاشر","diecinueve|تسعتاشر","veinte|عشرين"],"من ١١ لـ ١٥ ليهم أسماء خاصة، ومن ١٦ بيتكتبوا كلمة واحدة: dieci + الرقم (dieciséis). وبعد ٢٠: veintiuno، veintidós."],
+["A0","حيوانات",["el perro|الكلب","el gato|القطة","el pájaro|العصفورة","el caballo|الحصان","la vaca|البقرة","el pez|السمكة","el león|الأسد","la oveja|الخروف / النعجة"],"el pez السمكة الحية، وel pescado السمك اللي بيتاكل. والجمع: el pez ← los peces (الـ z بتبقى c)."],
+["A0","أدوات السؤال",["¿quién?|مين؟","¿qué?|إيه؟","¿dónde?|فين؟","¿cuándo?|إمتى؟","¿cómo?|إزاي؟","¿por qué?|ليه؟","¿cuánto?|كام / قد إيه؟","¿cuál?|أنهي؟"],"أدوات السؤال دايماً عليها علامة: qué، dónde، cómo. وpor qué (ليه) منفصلة، لكن porque (علشان) كلمة واحدة من غير علامة."],
+["A0","فواكه وخضار",["el plátano|الموزة","la naranja|البرتقانة","la fresa|الفراولة","la uva|العنب","el tomate|الطماطم","la patata|البطاطس","la cebolla|البصل","la zanahoria|الجزر"],"في أمريكا اللاتينية البطاطس la papa والموز la banana. الإسباني بيختلف بين البلاد في كلمات الأكل كتير."],
+["A0","حروف الجر",["en|في","sobre|على","debajo de|تحت","con|مع","sin|من غير","para|علشان / لـ","delante de|قدام","detrás de|ورا"],"el gato está debajo de la mesa (القطة تحت الترابيزة). وde + el بتبقى del: delante del coche."],
+["A0","الأضداد",["nuevo|جديد","viejo|قديم / عجوز","joven|صغير في السن","bonito|جميل","fácil|سهل","difícil|صعب","largo|طويل","corto|قصير"],"خلي بالك: largo معناها طويل (في الطول) مش «واسع». والصفات اللي بتنتهي بـ o بتتأنث بـ a: nuevo ← nueva."],
+["A0","العشرات والمية",["cero|صفر","treinta|تلاتين","cuarenta|أربعين","cincuenta|خمسين","sesenta|ستين","setenta|سبعين","ochenta|تمانين","cien|مية"],"من ٣١ بنستخدم y: treinta y uno، cuarenta y cinco. وcien للمية بالظبط، وciento لما بعدها رقم: ciento veinte."],
+["A0","مجاملات يومية",["Perdón|آسف","Disculpe|لو سمحت / عن إذنك","Claro|طبعاً","Vale|ماشي / تمام","De acuerdo|موافق","Bienvenido|أهلاً بيك","Hasta mañana|أشوفك بكرة","Que aproveche|بالهنا والشفا"],"Disculpe مع الغريب (usted) وdisculpa مع الأصحاب. وVale بتتقال طول الوقت في إسبانيا بمعنى «تمام»، وQue aproveche بتتقال لحد بياكل."],
+["A1","الأيام والشهور",["miércoles|يوم الأربع","jueves|يوم الخميس","viernes|يوم الجمعة","domingo|يوم الحد","enero|يناير","mayo|مايو","agosto|أغسطس","diciembre|ديسمبر"],"الشهور بتتكتب بحرف صغير: en mayo (في مايو). وللتاريخ: el 3 de agosto. والأيام: el domingo (الحد ده)، los domingos (كل حد)."],
+["A1","الروتين اليومي",["me despierto|بصحى","me levanto|بقوم من السرير","me ducho|باخد دش","me visto|بلبس","desayuno|بفطر","vuelvo a casa|برجع البيت","ceno|باتعشى","me acuesto|بنام (بدخل السرير)"],"الأفعال الانعكاسية معاها ضمير: me levanto، te levantas، se levanta، nos levantamos. وكتير منها بيتغير جذرها: despertar ← me despierto."],
+["A1","أفعال يومية",["venir|ييجي","salir|يخرج","tomar|ياخد / يشرب","dormir|ينام","escribir|يكتب","abrir|يفتح","esperar|يستنى / يتمنى","llegar|يوصل"],"tomar بتتقال على المواصلات والشرب: tomar el autobús، tomar un café. وesperar معناها يستنى ويتمنى: espero el bus، espero que vengas."],
+["A1","الساعة",["Son las ocho|الساعة تمانية","y media|ونص","y cuarto|وربع","menos cuarto|إلا ربع","mediodía|الضهر","medianoche|نص الليل","temprano|بدري","tarde|متأخر"],"للساعة واحدة بنقول es la una، وللباقي son las: son las tres y media. وللميعاد: a las ocho (الساعة تمانية)."],
+["A1","المواصلات",["el autobús|الأتوبيس","el metro|المترو","el tren|القطر","el coche|العربية","la bicicleta|العجلة","el avión|الطيارة","el taxi|التاكسي","a pie|ماشي على رجلي"],"مع المواصلات بنقول en: en autobús، en tren، en coche. والمشي: a pie أو andando. وفي أمريكا اللاتينية العربية el carro أو el auto."],
+["A1","تعبيرات tener",["tengo sed|أنا عطشان","tengo frío|أنا بردان","tengo calor|أنا حران","tengo sueño|أنا نعسان","tengo miedo|أنا خايف","tengo razón|معايا حق","tengo prisa|أنا مستعجل","tengo veinte años|عندي عشرين سنة"],"الإسباني بيستخدم tener مع الإحساس والسن: tengo frío مش estoy frío. وtengo que + فعل معناها «لازم»: tengo que trabajar."],
+["A1","صفات الشخصية",["amable|طيب / ذوق","gracioso|دمه خفيف","inteligente|ذكي","tímido|خجول","serio|جد","perezoso|كسلان","trabajador|شغّيل","simpático|لطيف"],"الصفات اللي بتنتهي بـ e مبتتغيرش: amable، inteligente. واللي بتنتهي بـ or بتزيد a: trabajador ← trabajadora. وللشخصية بنستخدم ser."],
+["A1","الفصل والمدرسة",["el libro|الكتاب","el bolígrafo|القلم","el cuaderno|الكشكول","la pregunta|السؤال","la respuesta|الإجابة","escuchar|يسمع","repetir|يعيد","los deberes|الواجب"],"في الفصل هتسمع: escuchad (اسمعوا)، repetid (عيدوا)، abrid el libro. دي صيغة الأمر مع vosotros في إسبانيا."],
+["A2","في الفندق",["Tengo una reserva a nombre de Salah|عندي حجز باسم صلاح","Una habitación para dos noches|أوضة لليلتين","¿El desayuno está incluido?|الفطار داخل في السعر؟","¿A qué hora hay que dejar la habitación?|لازم أسيب الأوضة الساعة كام؟","El aire acondicionado no funciona|التكييف مش شغال","¿Hay wifi?|فيه واي فاي؟","Quisiera una habitación tranquila|عايز أوضة هادية","¿Puede llamar a un taxi?|ممكن تطلب تاكسي؟"],"no funciona معناها «مش شغال» لأي جهاز. وhay معناها «فيه» وثابتة للمفرد والجمع: hay wifi، hay dos camas."],
+["A2","التليفون والمواعيد",["¿Diga? Soy Ahmed|ألو، أنا أحمد","Quisiera hablar con la señora Martín|عايز أكلم مدام مارتين","No cuelgue, por favor|خليك معايا على الخط","Te llamo más tarde|هكلمك بعدين","¿Quedamos el sábado?|نتقابل السبت؟","Estoy libre mañana por la noche|أنا فاضي بكرة بالليل","Lo siento, no puedo|آسف، مش هقدر","Nos vemos delante del café|نتقابل قدام الكافيه"],"quedar معناها «يتفق على ميعاد»: ¿quedamos? (نتقابل؟)، he quedado con Ana (عندي ميعاد مع آنا). كلمة أساسية في إسبانيا."],
+["A2","المطبخ والطبخ",["cortar|يقطّع","añadir|يضيف","mezclar|يخلط","cocinar|يطبخ","la sal|الملح","el azúcar|السكر","el aceite|الزيت","la sartén|الطاسة"],"في الوصفات بيستخدموا se: se corta la cebolla (البصل بيتقطع). أو الأمر مع usted: corte la cebolla."],
+["A2","زمان (imperfecto)",["Cuando era pequeño|لما كنت صغير","Hacía buen tiempo|الجو كان حلو","Tenía un perro|كان عندي كلب","Vivíamos en Alejandría|كنا ساكنين في إسكندرية","Jugaba al fútbol todos los días|كنت بلعب كورة كل يوم","Era genial|كان تحفة","Había mucha gente|كان فيه زحمة","Quería ser piloto|كنت عايز أبقى طيار"],"الـ imperfecto للوصف والعادة في الماضي: jugaba (كنت بلعب). -ar بتاخد -aba، و-er/-ir بتاخد -ía. والشواذ تلاتة بس: ser (era)، ir (iba)، ver (veía)."],
+["A2","المقارنة",["Es más alto que yo|هو أطول مني","Ella es menor que su hermano|هي أصغر من أخوها","Es tan caro como antes|غالي زي الأول","Este restaurante es mejor|المطعم ده أحسن","Habla mejor que yo|بيتكلم أحسن مني","Es el día más bonito de mi vida|ده أحلى يوم في حياتي","Tengo tanto trabajo como tú|عندي شغل قدك","Es peor que ayer|ده أوحش من إمبارح"],"más/menos + صفة + que، والمساواة tan + صفة + como. والشواذ: bueno ← mejor، malo ← peor، joven ← menor، viejo ← mayor."],
+["A2","الطبيعة",["el mar|البحر","la montaña|الجبل","la playa|البلاج","el río|النهر","el bosque|الغابة","el desierto|الصحرا","la isla|الجزيرة","el cielo|السما"],"نقول ir a la playa، ir a la montaña. وel cielo معناها السما والجنة كمان، ومنها ¡cielo! كلمة دلع."],
+["A2","شغل البيت",["limpiar la casa|ينضف البيت","fregar los platos|يغسل المواعين","hacer la compra|يشتري طلبات البيت","ordenar|يرتّب","lavar la ropa|يغسل الهدوم","barrer|يكنس","sacar la basura|يطلّع الزبالة","planchar|يكوي"],"hacer la compra في إسبانيا = يشتري طلبات البيت. وfregar فعل بيتغير جذره: yo friego، tú friegas."],
+["A2","ضمائر المفعول",["Lo veo|بشوفه","La conozco|أعرفها","Le hablo|بكلمه / بكلمها","Les escribo|بكتب لهم","Me mira|بيبص لي","Te quiero|بحبك","¿Puedes ayudarme?|ممكن تساعدني؟","Los compré ayer|اشتريتهم إمبارح"],"الضمير قبل الفعل المصرّف: lo veo. ومع المصدر بيلزق في آخره: ayudarme، verlo. lo/la/los/las للمفعول المباشر وle/les للغير مباشر."],
+["B1","مقابلة شغل",["Hábleme de usted|كلمني عن نفسك","Tengo cinco años de experiencia|عندي خبرة خمس سنين","Soy motivado y organizado|أنا متحمس ومنظم","¿Por qué quiere este puesto?|ليه عايز الوظيفة دي؟","Mi punto fuerte es la comunicación|نقطة قوتي التواصل","Trabajo bien en equipo|بشتغل كويس في فريق","¿Cuál es el sueldo?|المرتب كام؟","¿Cuándo podría empezar?|تقدر تبدأ إمتى؟"],"في المقابلات استخدم usted والـ condicional للأدب: podría، me gustaría، quisiera."],
+["B1","الصحة ونمط الحياة",["la salud|الصحة","la dieta|الرجيم","hacer deporte|يلعب رياضة","el estrés|التوتر","el sueño|النوم / الحلم","adelgazar|يخس","engordar|يتخن","equilibrado|متوازن"],"el sueño ليها معنيين: النوم والحلم. وestar a dieta = عامل رجيم. وhacer ejercicio = يتمرّن."],
+["B1","الإعلام",["el periódico|الجورنال","el artículo|المقالة","las noticias|الأخبار","el canal|القناة","el programa|البرنامج","el periodista|الصحفي","la publicidad|الإعلانات","las redes sociales|السوشيال ميديا"],"el programa مذكر رغم إنه بينتهي بـ a، زي el problema وel tema وel sistema (كلمات أصلها يوناني)."],
+["B1","العلاقات",["la pareja|الشريك / الكابل","casarse con|يتجوز","divorciarse|يطلّق","la confianza|الثقة","discutir|يتخانق / يتناقش","reconciliarse|يتصالح","llevarse bien con|يتفاهم كويس مع","enamorarse de|يقع في حب"],"نقول casarse con مش casarse a، وenamorarse de. وme llevo bien con mi jefe = بتفاهم كويس مع مديري."],
+["B1","حكاية في الماضي",["Dormía cuando sonó el teléfono|كنت نايم لما التليفون رن","Llovía, así que me quedé en casa|كانت بتمطر فقعدت في البيت","Mientras cocinaba, llegó él|وأنا بطبخ وصل","De repente, oí un ruido|فجأة سمعت صوت","Primero visitamos el museo|الأول زرنا المتحف","Luego fuimos al restaurante|بعد كده رحنا المطعم","Al final, todo salió bien|في الآخر كل حاجة عدّت على خير","Hace dos años me mudé|من سنتين نقلت"],"الـ imperfecto للخلفية والـ indefinido للحدث: dormía (خلفية) cuando sonó (حدث). وhace + مدة = من قد إيه: hace dos años."],
+["B1","الشكوى وحل المشاكل",["Hay un problema con mi pedido|فيه مشكلة في الأوردر بتاعي","No funciona|مش شغال","Quisiera un reembolso|عايز فلوسي ترجع","Quisiera hablar con el encargado|عايز أكلم المسؤول","No es lo que pedí|ده مش اللي طلبته","¿Puede cambiarlo?|ممكن تبدّله؟","Llevo una hora esperando|بقالي ساعة مستني","¿Qué me propone?|إيه الحل اللي تقترحه؟"],"llevar + مدة + gerundio = بقالي... بعمل: llevo una hora esperando. وlo que معناها «اللي»: lo que pedí."],
+["B1","الفلوس والبنك",["el dinero|الفلوس","el banco|البنك","la cuenta|الحساب / الفاتورة","pagar|يدفع","ahorrar|يحوّش","pedir prestado|يستلف","la tarjeta|الكارت","prestar|يسلّف"],"pedir prestado = ياخد سلفة، prestar = يدّي سلفة. وla cuenta ليها معنيين: حساب البنك والحساب في المطعم."],
+["B1","que وquien وdonde",["La mujer que habla es mi profesora|الست اللي بتتكلم دي مدرّستي","El libro que leo es apasionante|الكتاب اللي بقراه ممتع","La ciudad donde vivo es tranquila|المدينة اللي ساكن فيها هادية","El chico con quien hablé es mi primo|الولد اللي كلمته ده ابن عمي","Es el día en que la conocí|ده اليوم اللي قابلتها فيه","Lo que más me gusta es viajar|أكتر حاجة بحبها السفر","El hombre que viste es mi vecino|الراجل اللي شفته ده جاري","Es una autora cuyos libros me encantan|دي كاتبة بحب كتبها جداً"],"que هو الأشهر للأشخاص والحاجات، quien بعد حرف جر للأشخاص (con quien)، donde للمكان، وcuyo (اللي... بتاعه) بيتفق مع اللي بعده: cuyos libros."],
+["B2","الاقتصاد والأعمال",["la bolsa|البورصة","la inversión|الاستثمار","la competencia|المنافسة","el beneficio|المكسب","la deuda|الدين","la inflación|التضخم","el sueldo|المرتب","la crisis|الأزمة"],"في الأخبار هتسمع: la tasa de desempleo (نسبة البطالة)، el poder adquisitivo (القوة الشرائية)، la subida de precios (ارتفاع الأسعار)."],
+["B2","العلوم والبحث",["la investigación|البحث العلمي","el experimento|التجربة","el descubrimiento|الاكتشاف","el investigador|الباحث","la hipótesis|الفرضية","demostrar|يثبت","la inteligencia artificial|الذكاء الاصطناعي","el estudio|الدراسة"],"la experiencia = خبرة، وel experimento = تجربة علمية. وun estudio demuestra que... تعبير ثابت في المقالات."],
+["B2","الثقافة والفن",["la obra|العمل الفني","la novela|الرواية","la exposición|المعرض","el espectáculo|العرض","el patrimonio|التراث","el director|المخرج","la crítica|النقد","la obra maestra|التحفة الفنية"],"la novela رواية، والمسلسل la telenovela. ونقول una película dirigida por... (فيلم من إخراج...)."],
+["B2","المبني للمجهول",["El puente fue construido en 1990|الكوبري اتبنى سنة ١٩٩٠","Es considerado un experto|بيعتبروه خبير","La ley será votada la próxima semana|القانون هيتصوّت عليه الأسبوع الجاي","Este libro se lee en todo el mundo|الكتاب ده بيتقري في العالم كله","Se dice que la situación va a cambiar|بيقولوا إن الوضع هيتغير","Se habla español en 21 países|الإسباني بيتكلموه في ٢١ دولة","La decisión fue tomada ayer|القرار اتاخد إمبارح","Los resultados se publicarán mañana|النتايج هتتنشر بكرة"],"المبني للمجهول = ser + اسم المفعول متفق (fue construido). بس الأشهر في الكلام هو se: se dice، se habla، se venden pisos."],
+["B2","الكلام المنقول",["Me dijo que vendría|قال لي إنه هييجي","Me preguntó si estaba libre|سألني إذا كنت فاضي","Explicó que había perdido el tren|شرح إنه فاته القطر","Afirmó que todo iba bien|أكّد إن كل حاجة تمام","Me preguntó qué hacía|سألني بعمل إيه","Anunciaron que se casaban|أعلنوا إنهم هيتجوزوا","Le aconsejé que se fuera|نصحته يمشي","Prometió que me llamaría|وعد إنه هيكلمني"],"الأزمنة بترجع خطوة: presente ← imperfecto، futuro ← condicional. ومع الأوامر والنصايح في الماضي بييجي subjuntivo imperfecto: le aconsejé que se fuera."],
+["B2","الفرضيات والندم",["Si lo hubiera sabido, habría venido|لو كنت أعرف كنت جيت","Debería haberte escuchado|كان المفروض أسمع كلامك","Podría haber aprobado|كان ممكن ينجح","Yo que tú, no aceptaría|لو مكانك مكنتش وافقت","Si hubieras venido, te habría encantado|لو كنت جيت كنت هتحبها جداً","Me habría gustado viajar más|كان نفسي أسافر أكتر","Por si llueve, lleva un paraguas|لو مطرت خد شمسية","Sin tu ayuda, no lo habría conseguido|من غير مساعدتك مكنتش هنجح"],"الندم: si + pluscuamperfecto de subjuntivo ← condicional perfecto: si lo hubiera sabido, habría venido. وyo que tú = لو مكانك."],
+["B2","الكتابة الرسمية",["Le escribo en relación con mi solicitud|بكتب لحضرتك بخصوص طلبي","Le adjunto mi currículum|مرفق السيرة الذاتية","Tras nuestra conversación telefónica|بعد مكالمتنا التليفونية","Me pongo en contacto con usted|بتواصل مع حضرتك","Quedo a su disposición|أنا تحت أمرك لأي استفسار","A la espera de su respuesta|في انتظار ردك","Reciba un cordial saludo|تقبّل تحياتي","Atentamente|مع خالص التحية"],"الإيميل الرسمي بيبدأ بـ Estimado señor / Estimada señora: (بنقطتين مش فاصلة) ويخلص بـ Atentamente أو Un saludo."],
+["B2","الشغل والمسيرة",["la formación|التدريب / التعليم","el título|الشهادة","la contratación|التعيين","el despido|الرفد","la carrera|المسيرة / الدراسة الجامعية","la habilidad|المهارة","las prácticas|التدريب العملي","el ascenso|الترقية"],"hacer prácticas = يعمل تدريب عملي. وla carrera ليها معنيين: الدراسة الجامعية (estudio la carrera de Derecho) والمسيرة المهنية."]
+];
+
+var READ={
+fr:[
+{lv:"A0",title:"أنا وبيتي",text:"Bonjour ! Je m'appelle Karim. J'habite au Caire. Ma maison est petite mais belle. Il y a une cuisine, deux chambres et un salon. Dans ma chambre, il y a un lit, une table et une chaise. J'ai un chat. Il est noir et blanc. Il dort sur mon lit.",gl:["habite|ساكن","mais|لكن","le salon|الصالة","il y a|فيه"],qs:[["كريم ساكن فين؟",["القاهرة","إسكندرية","باريس"],0],["فيه كام أوضة نوم؟",["واحدة","اتنين","تلاتة"],1],["القطة لونها إيه؟",["أسود وأبيض","أحمر","أصفر"],0]]},
+{lv:"A0",title:"في السوق",text:"C'est samedi. Sophie va au marché avec sa mère. Elle achète des tomates, des oranges et du pain. Les fraises sont très bonnes mais un peu chères. Sa mère achète du fromage et un poulet. Elles rentrent à la maison à midi.",gl:["achète|بتشتري","chères|غالية","rentrent|بيرجعوا"],qs:[["صوفي راحت السوق مع مين؟",["أبوها","أمها","صاحبتها"],1],["الفراولة كانت عاملة إزاي؟",["رخيصة","حلوة بس غالية شوية","وحشة"],1],["رجعوا البيت إمتى؟",["الصبح بدري","الضهر","بالليل"],1]]},
+{lv:"A1",title:"يوم في حياة ليلى",text:"Leïla est infirmière. Elle se lève à six heures et prend le petit-déjeuner avec son mari. Elle va à l'hôpital en métro. Elle travaille de sept heures à quinze heures. Le soir, elle fait du sport ou elle lit un livre. Le week-end, elle aime sortir avec ses amies au cinéma.",gl:["infirmière|ممرضة","son mari|جوزها","le soir|بالليل","sortir|تخرج"],qs:[["ليلى شغلتها إيه؟",["دكتورة","ممرضة","مدرّسة"],1],["بتروح الشغل إزاي؟",["بالمترو","بالعربية","مشي"],0],["بتعمل إيه في الويك إند؟",["بتنام","بتخرج مع صحباتها للسينما","بتشتغل"],1]]},
+{lv:"A1",title:"رسالة لصاحب",text:"Salut Paul, je suis à Marseille avec ma famille. Il fait très chaud et le ciel est bleu. Le matin, nous allons à la plage. À midi, nous mangeons du poisson dans un petit restaurant. Le soir, nous nous promenons dans le vieux port. Je rentre dimanche. À bientôt ! Yasmine",gl:["nous nous promenons|بنتمشى","le vieux port|الميناء القديم","à bientôt|أشوفك قريب"],qs:[["ياسمين فين؟",["في مرسيليا","في باريس","في القاهرة"],0],["الجو عامل إزاي؟",["بارد","حر جداً","بيمطر"],1],["هترجع إمتى؟",["السبت","الحد","الاتنين"],1]]},
+{lv:"A2",title:"لما كنت صغير",text:"Quand j'étais petit, j'habitais dans un village près d'Assouan. Notre maison avait un grand jardin avec des palmiers. Tous les matins, je marchais vingt minutes pour aller à l'école. Après l'école, je jouais au football avec mes cousins. Le vendredi, toute la famille mangeait chez ma grand-mère. C'était une vie simple, mais j'étais heureux. Il y a dix ans, nous avons déménagé au Caire.",gl:["près de|قريب من","les palmiers|النخل","déménagé|نقلنا","heureux|مبسوط"],qs:[["الكاتب كان ساكن فين وهو صغير؟",["في قرية قريبة من أسوان","في القاهرة","في إسكندرية"],0],["يوم الجمعة كانوا بيعملوا إيه؟",["بيروحوا البحر","بياكلوا عند الجدة","بيلعبوا كورة"],1],["نقلوا القاهرة إمتى؟",["من عشر سنين","من سنتين","السنة اللي فاتت"],0]]},
+{lv:"A2",title:"عند الدكتور",text:"Hier, Marc ne se sentait pas bien. Il avait mal à la tête et un peu de fièvre. Il a appelé le médecin et il a pris un rendez-vous pour l'après-midi. Le médecin l'a examiné et a dit : « Ce n'est pas grave, c'est un petit rhume. Reposez-vous, buvez beaucoup d'eau et prenez ce médicament trois fois par jour. » Marc est passé à la pharmacie, puis il est rentré se coucher.",gl:["rendez-vous|ميعاد","grave|خطير","un rhume|برد","reposez-vous|ارتاح"],qs:[["مارك كان عنده إيه؟",["وجع في ضهره","صداع وسخونية خفيفة","وجع في سنانه"],1],["الدكتور قال إيه؟",["لازم يدخل المستشفى","مش خطير، دور برد بسيط","محتاج عملية"],1],["ياخد الدوا كام مرة؟",["مرة في اليوم","مرتين","تلات مرات في اليوم"],2]]},
+{lv:"B1",title:"الشغل من البيت",text:"Depuis la pandémie, de plus en plus d'entreprises permettent à leurs employés de travailler à distance. Pour beaucoup, c'est un vrai avantage : on ne perd plus de temps dans les transports et on peut mieux organiser sa journée. Cependant, le télétravail a aussi des inconvénients. Certains se sentent isolés et ont du mal à séparer vie professionnelle et vie privée. C'est pourquoi beaucoup d'entreprises choisissent aujourd'hui une formule mixte : deux ou trois jours au bureau, le reste à la maison.",gl:["à distance|عن بعد","un avantage|ميزة","les inconvénients|العيوب","isolés|معزولين","une formule mixte|نظام مختلط"],qs:[["إيه ميزة الشغل من البيت حسب النص؟",["المرتب أعلى","مفيش وقت ضايع في المواصلات","الشغل أقل"],1],["إيه من عيوبه؟",["الإحساس بالعزلة","الإنترنت غالي","المدير بيزعل"],0],["شركات كتير بتختار إيه دلوقتي؟",["الشغل من المكتب بس","البيت بس","نظام مختلط بين المكتب والبيت"],2]]},
+{lv:"B1",title:"رحلة مش متوقعة",text:"L'été dernier, nous avions prévu de passer une semaine à Lyon. Mais le jour du départ, notre train a été annulé à cause d'une grève. Nous étions très déçus. Au lieu de rentrer à la maison, nous avons loué une voiture et nous sommes partis vers les Alpes. Nous ne connaissions pas la région, mais les paysages étaient magnifiques. Finalement, ce voyage improvisé est devenu l'un de nos meilleurs souvenirs.",gl:["prévu|كنا مخططين","annulé|اتلغى","une grève|إضراب","déçus|زعلانين / محبطين","au lieu de|بدل ما"],qs:[["ليه القطر اتلغى؟",["بسبب الجو","بسبب إضراب","بسبب عطل"],1],["عملوا إيه بدل ما يرجعوا؟",["أجّروا عربية وراحوا الألب","ركبوا طيارة","استنوا لليوم اللي بعده"],0],["الرحلة بقت إيه في الآخر؟",["تجربة وحشة","من أحلى ذكرياتهم","رحلة مملة"],1]]},
+{lv:"B2",title:"السوشيال ميديا والشباب",text:"Selon une étude récente, les adolescents français passent en moyenne plus de trois heures par jour sur les réseaux sociaux. Si ces plateformes leur permettent de rester en contact avec leurs amis et d'accéder à une quantité impressionnante d'informations, elles ne sont pas sans risques. Les chercheurs soulignent notamment l'impact sur le sommeil et sur l'estime de soi, les jeunes ayant tendance à se comparer constamment aux autres. Faut-il pour autant interdire les écrans ? La plupart des spécialistes estiment qu'il vaut mieux éduquer les jeunes à un usage raisonné plutôt que de tout interdire.",gl:["en moyenne|في المتوسط","soulignent|بيأكدوا","l'estime de soi|الثقة بالنفس","pour autant|مع ذلك / بناءً على كده","un usage raisonné|استخدام واعي"],qs:[["المراهقين بيقضوا قد إيه على السوشيال ميديا؟",["أقل من ساعة","أكتر من تلات ساعات في اليوم","عشر ساعات"],1],["الباحثين قلقانين من تأثيرها على إيه؟",["النوم والثقة بالنفس","الدراسة بس","الأكل"],0],["رأي أغلب المتخصصين إيه؟",["نمنع الموبايلات خالص","نعلّم الشباب استخدام واعي","مفيش مشكلة"],1]]},
+{lv:"B2",title:"المدن والعربيات",text:"De nombreuses villes européennes cherchent à réduire la place de la voiture dans leur centre. Paris, par exemple, a multiplié les pistes cyclables et transformé certaines voies rapides en promenades piétonnes. Les partisans de ces mesures affirment qu'elles améliorent la qualité de l'air et la qualité de vie. Leurs opposants, en revanche, dénoncent des embouteillages accrus et des mesures qui, selon eux, pénalisent ceux qui habitent en banlieue et n'ont pas d'alternative. Le débat reste vif, mais une chose est sûre : la ville de demain ne ressemblera pas à celle d'hier.",gl:["les pistes cyclables|حارات العجل","les partisans|المؤيدين","en revanche|في المقابل","les embouteillages|الزحمة المرورية","la banlieue|الضواحي"],qs:[["باريس عملت إيه؟",["زودت حارات العجل وحولت طرق لممشى","بنت كباري جديدة","منعت الأتوبيسات"],0],["المعارضين بيقولوا إيه؟",["الهوا بقى أنضف","الزحمة زادت وسكان الضواحي اتضرروا","مفيش أي تغيير"],1],["إيه الحاجة الأكيدة حسب الكاتب؟",["العربيات هتختفي","مدينة المستقبل مش هتبقى زي زمان","النقاش خلص"],1]]}
+],
+es:[
+{lv:"A0",title:"أنا وبيتي",text:"¡Hola! Me llamo Karim. Vivo en El Cairo. Mi casa es pequeña pero bonita. Hay una cocina, dos dormitorios y un salón. En mi dormitorio hay una cama, una mesa y una silla. Tengo un gato. Es negro y blanco. Duerme en mi cama.",gl:["vivo|ساكن","pero|لكن","el salón|الصالة","hay|فيه"],qs:[["كريم ساكن فين؟",["القاهرة","إسكندرية","مدريد"],0],["فيه كام أوضة نوم؟",["واحدة","اتنين","تلاتة"],1],["القطة لونها إيه؟",["أسود وأبيض","أحمر","أصفر"],0]]},
+{lv:"A0",title:"في السوق",text:"Es sábado. Lucía va al mercado con su madre. Compra tomates, naranjas y pan. Las fresas están muy buenas, pero son un poco caras. Su madre compra queso y un pollo. Vuelven a casa a mediodía.",gl:["compra|بتشتري","caras|غالية","vuelven|بيرجعوا"],qs:[["لوسيا راحت السوق مع مين؟",["أبوها","أمها","صاحبتها"],1],["الفراولة كانت عاملة إزاي؟",["رخيصة","حلوة بس غالية شوية","وحشة"],1],["رجعوا البيت إمتى؟",["الصبح بدري","الضهر","بالليل"],1]]},
+{lv:"A1",title:"يوم في حياة ليلى",text:"Leila es enfermera. Se levanta a las seis y desayuna con su marido. Va al hospital en metro. Trabaja de siete a tres. Por la tarde hace deporte o lee un libro. Los fines de semana le gusta salir con sus amigas al cine.",gl:["enfermera|ممرضة","su marido|جوزها","por la tarde|بعد الضهر","salir|تخرج"],qs:[["ليلى شغلتها إيه؟",["دكتورة","ممرضة","مدرّسة"],1],["بتروح الشغل إزاي؟",["بالمترو","بالعربية","مشي"],0],["بتعمل إيه في الويك إند؟",["بتنام","بتخرج مع صحباتها للسينما","بتشتغل"],1]]},
+{lv:"A1",title:"رسالة لصاحب",text:"Hola, Pablo: estoy en Valencia con mi familia. Hace mucho calor y el cielo está azul. Por la mañana vamos a la playa. A mediodía comemos paella en un restaurante pequeño. Por la noche paseamos por el centro. Vuelvo el domingo. ¡Hasta pronto! Yasmín",gl:["paseamos|بنتمشى","el centro|وسط البلد","hasta pronto|أشوفك قريب"],qs:[["ياسمين فين؟",["في فالنسيا","في مدريد","في القاهرة"],0],["الجو عامل إزاي؟",["بارد","حر جداً","بيمطر"],1],["هترجع إمتى؟",["السبت","الحد","الاتنين"],1]]},
+{lv:"A2",title:"لما كنت صغير",text:"Cuando era pequeño, vivía en un pueblo cerca de Asuán. Nuestra casa tenía un jardín grande con palmeras. Todas las mañanas caminaba veinte minutos para ir al colegio. Después de clase, jugaba al fútbol con mis primos. Los viernes, toda la familia comía en casa de mi abuela. Era una vida sencilla, pero yo era feliz. Hace diez años nos mudamos a El Cairo.",gl:["cerca de|قريب من","las palmeras|النخل","nos mudamos|نقلنا","sencilla|بسيطة"],qs:[["الكاتب كان ساكن فين وهو صغير؟",["في قرية قريبة من أسوان","في القاهرة","في إسكندرية"],0],["يوم الجمعة كانوا بيعملوا إيه؟",["بيروحوا البحر","بياكلوا عند الجدة","بيلعبوا كورة"],1],["نقلوا القاهرة إمتى؟",["من عشر سنين","من سنتين","السنة اللي فاتت"],0]]},
+{lv:"A2",title:"عند الدكتور",text:"Ayer Marcos no se sentía bien. Le dolía la cabeza y tenía un poco de fiebre. Llamó al médico y pidió una cita para la tarde. El médico lo examinó y dijo: «No es grave, es un resfriado. Descanse, beba mucha agua y tome este medicamento tres veces al día». Marcos pasó por la farmacia y luego se fue a la cama.",gl:["una cita|ميعاد","grave|خطير","un resfriado|برد","descanse|ارتاح"],qs:[["ماركوس كان عنده إيه؟",["وجع في ضهره","صداع وسخونية خفيفة","وجع في سنانه"],1],["الدكتور قال إيه؟",["لازم يدخل المستشفى","مش خطير، دور برد","محتاج عملية"],1],["ياخد الدوا كام مرة؟",["مرة في اليوم","مرتين","تلات مرات في اليوم"],2]]},
+{lv:"B1",title:"الشغل من البيت",text:"Desde la pandemia, cada vez más empresas permiten a sus empleados trabajar a distancia. Para muchos es una gran ventaja: ya no pierden tiempo en el transporte y pueden organizar mejor su día. Sin embargo, el teletrabajo también tiene inconvenientes. Algunas personas se sienten aisladas y les cuesta separar la vida profesional de la vida privada. Por eso, muchas empresas eligen hoy un modelo mixto: dos o tres días en la oficina y el resto en casa.",gl:["a distancia|عن بعد","una ventaja|ميزة","inconvenientes|عيوب","aisladas|معزولين","les cuesta|بيصعب عليهم"],qs:[["إيه ميزة الشغل من البيت حسب النص؟",["المرتب أعلى","مفيش وقت ضايع في المواصلات","الشغل أقل"],1],["إيه من عيوبه؟",["الإحساس بالعزلة","الإنترنت غالي","المدير بيزعل"],0],["شركات كتير بتختار إيه دلوقتي؟",["المكتب بس","البيت بس","نظام مختلط بين المكتب والبيت"],2]]},
+{lv:"B1",title:"رحلة مش متوقعة",text:"El verano pasado habíamos planeado pasar una semana en Sevilla. Pero el día de la salida cancelaron nuestro tren por una huelga. Estábamos muy decepcionados. En lugar de volver a casa, alquilamos un coche y nos fuimos hacia el norte. No conocíamos la región, pero los paisajes eran preciosos. Al final, aquel viaje improvisado se convirtió en uno de nuestros mejores recuerdos.",gl:["habíamos planeado|كنا مخططين","una huelga|إضراب","decepcionados|محبطين","en lugar de|بدل ما","se convirtió en|بقى"],qs:[["ليه القطر اتلغى؟",["بسبب الجو","بسبب إضراب","بسبب عطل"],1],["عملوا إيه بدل ما يرجعوا؟",["أجّروا عربية وراحوا الشمال","ركبوا طيارة","استنوا لليوم اللي بعده"],0],["الرحلة بقت إيه في الآخر؟",["تجربة وحشة","من أحلى ذكرياتهم","رحلة مملة"],1]]},
+{lv:"B2",title:"السوشيال ميديا والشباب",text:"Según un estudio reciente, los adolescentes españoles pasan de media más de tres horas al día en las redes sociales. Aunque estas plataformas les permiten mantenerse en contacto con sus amigos y acceder a una cantidad enorme de información, no están exentas de riesgos. Los investigadores destacan sobre todo su impacto en el sueño y en la autoestima, ya que los jóvenes tienden a compararse constantemente con los demás. ¿Habría que prohibir las pantallas? La mayoría de los expertos considera que es preferible educar a los jóvenes en un uso responsable en lugar de prohibirlo todo.",gl:["de media|في المتوسط","exentas de|خالية من","destacan|بيأكدوا","la autoestima|الثقة بالنفس","un uso responsable|استخدام واعي"],qs:[["المراهقين بيقضوا قد إيه على السوشيال ميديا؟",["أقل من ساعة","أكتر من تلات ساعات في اليوم","عشر ساعات"],1],["الباحثين قلقانين من تأثيرها على إيه؟",["النوم والثقة بالنفس","الدراسة بس","الأكل"],0],["رأي أغلب الخبراء إيه؟",["نمنع الموبايلات خالص","نعلّم الشباب استخدام واعي","مفيش مشكلة"],1]]},
+{lv:"B2",title:"المدن والعربيات",text:"Numerosas ciudades europeas intentan reducir el espacio del coche en sus centros. Madrid y Barcelona, por ejemplo, han creado zonas de bajas emisiones y han ampliado los carriles bici. Los partidarios de estas medidas sostienen que mejoran la calidad del aire y la calidad de vida. Sus detractores, en cambio, denuncian más atascos y creen que perjudican a quienes viven en las afueras y no tienen alternativa. El debate sigue abierto, pero una cosa es segura: la ciudad del futuro no se parecerá a la del pasado.",gl:["los carriles bici|حارات العجل","los partidarios|المؤيدين","en cambio|في المقابل","los atascos|الزحمة المرورية","las afueras|الضواحي"],qs:[["مدريد وبرشلونة عملوا إيه؟",["مناطق انبعاثات قليلة وحارات عجل أكتر","كباري جديدة","منعوا الأتوبيسات"],0],["المعارضين بيقولوا إيه؟",["الهوا بقى أنضف","الزحمة زادت وسكان الضواحي اتضرروا","مفيش أي تغيير"],1],["إيه الحاجة الأكيدة حسب الكاتب؟",["العربيات هتختفي","مدينة المستقبل مش هتبقى زي زمان","النقاش خلص"],1]]}
+]};
+
+var CONJ={"fr":[{"v":"être","a":"يكون / يبقى","t":{"pres":["suis","es","est","sommes","êtes","sont"],"pc":["ai été","as été","a été","avons été","avez été","ont été"],"imp":["étais","étais","était","étions","étiez","étaient"],"fut":["serai","seras","sera","serons","serez","seront"],"cond":["serais","serais","serait","serions","seriez","seraient"],"subj":["sois","sois","soit","soyons","soyez","soient"],"pqp":["avais été","avais été","avait été","avions été","aviez été","avaient été"],"condp":["aurais été","aurais été","aurait été","aurions été","auriez été","auraient été"]}},{"v":"avoir","a":"عنده / يملك","t":{"pres":["ai","as","a","avons","avez","ont"],"pc":["ai eu","as eu","a eu","avons eu","avez eu","ont eu"],"imp":["avais","avais","avait","avions","aviez","avaient"],"fut":["aurai","auras","aura","aurons","aurez","auront"],"cond":["aurais","aurais","aurait","aurions","auriez","auraient"],"subj":["aie","aies","ait","ayons","ayez","aient"],"pqp":["avais eu","avais eu","avait eu","avions eu","aviez eu","avaient eu"],"condp":["aurais eu","aurais eu","aurait eu","aurions eu","auriez eu","auraient eu"]}},{"v":"aller","a":"يروح","t":{"pres":["vais","vas","va","allons","allez","vont"],"pc":["suis allé","es allé","est allé","sommes allés","êtes allés","sont allés"],"imp":["allais","allais","allait","allions","alliez","allaient"],"fut":["irai","iras","ira","irons","irez","iront"],"cond":["irais","irais","irait","irions","iriez","iraient"],"subj":["aille","ailles","aille","allions","alliez","aillent"],"pqp":["étais allé","étais allé","était allé","étions allés","étiez allés","étaient allés"],"condp":["serais allé","serais allé","serait allé","serions allés","seriez allés","seraient allés"]}},{"v":"faire","a":"يعمل","t":{"pres":["fais","fais","fait","faisons","faites","font"],"pc":["ai fait","as fait","a fait","avons fait","avez fait","ont fait"],"imp":["faisais","faisais","faisait","faisions","faisiez","faisaient"],"fut":["ferai","feras","fera","ferons","ferez","feront"],"cond":["ferais","ferais","ferait","ferions","feriez","feraient"],"subj":["fasse","fasses","fasse","fassions","fassiez","fassent"],"pqp":["avais fait","avais fait","avait fait","avions fait","aviez fait","avaient fait"],"condp":["aurais fait","aurais fait","aurait fait","aurions fait","auriez fait","auraient fait"]}},{"v":"dire","a":"يقول","t":{"pres":["dis","dis","dit","disons","dites","disent"],"pc":["ai dit","as dit","a dit","avons dit","avez dit","ont dit"],"imp":["disais","disais","disait","disions","disiez","disaient"],"fut":["dirai","diras","dira","dirons","direz","diront"],"cond":["dirais","dirais","dirait","dirions","diriez","diraient"],"subj":["dise","dises","dise","disions","disiez","disent"],"pqp":["avais dit","avais dit","avait dit","avions dit","aviez dit","avaient dit"],"condp":["aurais dit","aurais dit","aurait dit","aurions dit","auriez dit","auraient dit"]}},{"v":"pouvoir","a":"يقدر","t":{"pres":["peux","peux","peut","pouvons","pouvez","peuvent"],"pc":["ai pu","as pu","a pu","avons pu","avez pu","ont pu"],"imp":["pouvais","pouvais","pouvait","pouvions","pouviez","pouvaient"],"fut":["pourrai","pourras","pourra","pourrons","pourrez","pourront"],"cond":["pourrais","pourrais","pourrait","pourrions","pourriez","pourraient"],"subj":["puisse","puisses","puisse","puissions","puissiez","puissent"],"pqp":["avais pu","avais pu","avait pu","avions pu","aviez pu","avaient pu"],"condp":["aurais pu","aurais pu","aurait pu","aurions pu","auriez pu","auraient pu"]}},{"v":"vouloir","a":"يريد / عايز","t":{"pres":["veux","veux","veut","voulons","voulez","veulent"],"pc":["ai voulu","as voulu","a voulu","avons voulu","avez voulu","ont voulu"],"imp":["voulais","voulais","voulait","voulions","vouliez","voulaient"],"fut":["voudrai","voudras","voudra","voudrons","voudrez","voudront"],"cond":["voudrais","voudrais","voudrait","voudrions","voudriez","voudraient"],"subj":["veuille","veuilles","veuille","voulions","vouliez","veuillent"],"pqp":["avais voulu","avais voulu","avait voulu","avions voulu","aviez voulu","avaient voulu"],"condp":["aurais voulu","aurais voulu","aurait voulu","aurions voulu","auriez voulu","auraient voulu"]}},{"v":"savoir","a":"يعرف (معلومة)","t":{"pres":["sais","sais","sait","savons","savez","savent"],"pc":["ai su","as su","a su","avons su","avez su","ont su"],"imp":["savais","savais","savait","savions","saviez","savaient"],"fut":["saurai","sauras","saura","saurons","saurez","sauront"],"cond":["saurais","saurais","saurait","saurions","sauriez","sauraient"],"subj":["sache","saches","sache","sachions","sachiez","sachent"],"pqp":["avais su","avais su","avait su","avions su","aviez su","avaient su"],"condp":["aurais su","aurais su","aurait su","aurions su","auriez su","auraient su"]}},{"v":"venir","a":"ييجي","t":{"pres":["viens","viens","vient","venons","venez","viennent"],"pc":["suis venu","es venu","est venu","sommes venus","êtes venus","sont venus"],"imp":["venais","venais","venait","venions","veniez","venaient"],"fut":["viendrai","viendras","viendra","viendrons","viendrez","viendront"],"cond":["viendrais","viendrais","viendrait","viendrions","viendriez","viendraient"],"subj":["vienne","viennes","vienne","venions","veniez","viennent"],"pqp":["étais venu","étais venu","était venu","étions venus","étiez venus","étaient venus"],"condp":["serais venu","serais venu","serait venu","serions venus","seriez venus","seraient venus"]}},{"v":"prendre","a":"ياخد","t":{"pres":["prends","prends","prend","prenons","prenez","prennent"],"pc":["ai pris","as pris","a pris","avons pris","avez pris","ont pris"],"imp":["prenais","prenais","prenait","prenions","preniez","prenaient"],"fut":["prendrai","prendras","prendra","prendrons","prendrez","prendront"],"cond":["prendrais","prendrais","prendrait","prendrions","prendriez","prendraient"],"subj":["prenne","prennes","prenne","prenions","preniez","prennent"],"pqp":["avais pris","avais pris","avait pris","avions pris","aviez pris","avaient pris"],"condp":["aurais pris","aurais pris","aurait pris","aurions pris","auriez pris","auraient pris"]}},{"v":"voir","a":"يشوف","t":{"pres":["vois","vois","voit","voyons","voyez","voient"],"pc":["ai vu","as vu","a vu","avons vu","avez vu","ont vu"],"imp":["voyais","voyais","voyait","voyions","voyiez","voyaient"],"fut":["verrai","verras","verra","verrons","verrez","verront"],"cond":["verrais","verrais","verrait","verrions","verriez","verraient"],"subj":["voie","voies","voie","voyions","voyiez","voient"],"pqp":["avais vu","avais vu","avait vu","avions vu","aviez vu","avaient vu"],"condp":["aurais vu","aurais vu","aurait vu","aurions vu","auriez vu","auraient vu"]}},{"v":"devoir","a":"لازم / المفروض","t":{"pres":["dois","dois","doit","devons","devez","doivent"],"pc":["ai dû","as dû","a dû","avons dû","avez dû","ont dû"],"imp":["devais","devais","devait","devions","deviez","devaient"],"fut":["devrai","devras","devra","devrons","devrez","devront"],"cond":["devrais","devrais","devrait","devrions","devriez","devraient"],"subj":["doive","doives","doive","devions","deviez","doivent"],"pqp":["avais dû","avais dû","avait dû","avions dû","aviez dû","avaient dû"],"condp":["aurais dû","aurais dû","aurait dû","aurions dû","auriez dû","auraient dû"]}},{"v":"mettre","a":"يحط / يلبس","t":{"pres":["mets","mets","met","mettons","mettez","mettent"],"pc":["ai mis","as mis","a mis","avons mis","avez mis","ont mis"],"imp":["mettais","mettais","mettait","mettions","mettiez","mettaient"],"fut":["mettrai","mettras","mettra","mettrons","mettrez","mettront"],"cond":["mettrais","mettrais","mettrait","mettrions","mettriez","mettraient"],"subj":["mette","mettes","mette","mettions","mettiez","mettent"],"pqp":["avais mis","avais mis","avait mis","avions mis","aviez mis","avaient mis"],"condp":["aurais mis","aurais mis","aurait mis","aurions mis","auriez mis","auraient mis"]}},{"v":"partir","a":"يمشي / يسافر","t":{"pres":["pars","pars","part","partons","partez","partent"],"pc":["suis parti","es parti","est parti","sommes partis","êtes partis","sont partis"],"imp":["partais","partais","partait","partions","partiez","partaient"],"fut":["partirai","partiras","partira","partirons","partirez","partiront"],"cond":["partirais","partirais","partirait","partirions","partiriez","partiraient"],"subj":["parte","partes","parte","partions","partiez","partent"],"pqp":["étais parti","étais parti","était parti","étions partis","étiez partis","étaient partis"],"condp":["serais parti","serais parti","serait parti","serions partis","seriez partis","seraient partis"]}},{"v":"sortir","a":"يخرج","t":{"pres":["sors","sors","sort","sortons","sortez","sortent"],"pc":["suis sorti","es sorti","est sorti","sommes sortis","êtes sortis","sont sortis"],"imp":["sortais","sortais","sortait","sortions","sortiez","sortaient"],"fut":["sortirai","sortiras","sortira","sortirons","sortirez","sortiront"],"cond":["sortirais","sortirais","sortirait","sortirions","sortiriez","sortiraient"],"subj":["sorte","sortes","sorte","sortions","sortiez","sortent"],"pqp":["étais sorti","étais sorti","était sorti","étions sortis","étiez sortis","étaient sortis"],"condp":["serais sorti","serais sorti","serait sorti","serions sortis","seriez sortis","seraient sortis"]}},{"v":"connaître","a":"يعرف (شخص أو مكان)","t":{"pres":["connais","connais","connaît","connaissons","connaissez","connaissent"],"pc":["ai connu","as connu","a connu","avons connu","avez connu","ont connu"],"imp":["connaissais","connaissais","connaissait","connaissions","connaissiez","connaissaient"],"fut":["connaîtrai","connaîtras","connaîtra","connaîtrons","connaîtrez","connaîtront"],"cond":["connaîtrais","connaîtrais","connaîtrait","connaîtrions","connaîtriez","connaîtraient"],"subj":["connaisse","connaisses","connaisse","connaissions","connaissiez","connaissent"],"pqp":["avais connu","avais connu","avait connu","avions connu","aviez connu","avaient connu"],"condp":["aurais connu","aurais connu","aurait connu","aurions connu","auriez connu","auraient connu"]}},{"v":"croire","a":"يصدّق / يعتقد","t":{"pres":["crois","crois","croit","croyons","croyez","croient"],"pc":["ai cru","as cru","a cru","avons cru","avez cru","ont cru"],"imp":["croyais","croyais","croyait","croyions","croyiez","croyaient"],"fut":["croirai","croiras","croira","croirons","croirez","croiront"],"cond":["croirais","croirais","croirait","croirions","croiriez","croiraient"],"subj":["croie","croies","croie","croyions","croyiez","croient"],"pqp":["avais cru","avais cru","avait cru","avions cru","aviez cru","avaient cru"],"condp":["aurais cru","aurais cru","aurait cru","aurions cru","auriez cru","auraient cru"]}},{"v":"boire","a":"يشرب","t":{"pres":["bois","bois","boit","buvons","buvez","boivent"],"pc":["ai bu","as bu","a bu","avons bu","avez bu","ont bu"],"imp":["buvais","buvais","buvait","buvions","buviez","buvaient"],"fut":["boirai","boiras","boira","boirons","boirez","boiront"],"cond":["boirais","boirais","boirait","boirions","boiriez","boiraient"],"subj":["boive","boives","boive","buvions","buviez","boivent"],"pqp":["avais bu","avais bu","avait bu","avions bu","aviez bu","avaient bu"],"condp":["aurais bu","aurais bu","aurait bu","aurions bu","auriez bu","auraient bu"]}},{"v":"manger","a":"ياكل","t":{"pres":["mange","manges","mange","mangeons","mangez","mangent"],"pc":["ai mangé","as mangé","a mangé","avons mangé","avez mangé","ont mangé"],"imp":["mangeais","mangeais","mangeait","mangions","mangiez","mangeaient"],"fut":["mangerai","mangeras","mangera","mangerons","mangerez","mangeront"],"cond":["mangerais","mangerais","mangerait","mangerions","mangeriez","mangeraient"],"subj":["mange","manges","mange","mangions","mangiez","mangent"],"pqp":["avais mangé","avais mangé","avait mangé","avions mangé","aviez mangé","avaient mangé"],"condp":["aurais mangé","aurais mangé","aurait mangé","aurions mangé","auriez mangé","auraient mangé"]}},{"v":"parler","a":"يتكلم","t":{"pres":["parle","parles","parle","parlons","parlez","parlent"],"pc":["ai parlé","as parlé","a parlé","avons parlé","avez parlé","ont parlé"],"imp":["parlais","parlais","parlait","parlions","parliez","parlaient"],"fut":["parlerai","parleras","parlera","parlerons","parlerez","parleront"],"cond":["parlerais","parlerais","parlerait","parlerions","parleriez","parleraient"],"subj":["parle","parles","parle","parlions","parliez","parlent"],"pqp":["avais parlé","avais parlé","avait parlé","avions parlé","aviez parlé","avaient parlé"],"condp":["aurais parlé","aurais parlé","aurait parlé","aurions parlé","auriez parlé","auraient parlé"]}},{"v":"aimer","a":"يحب","t":{"pres":["aime","aimes","aime","aimons","aimez","aiment"],"pc":["ai aimé","as aimé","a aimé","avons aimé","avez aimé","ont aimé"],"imp":["aimais","aimais","aimait","aimions","aimiez","aimaient"],"fut":["aimerai","aimeras","aimera","aimerons","aimerez","aimeront"],"cond":["aimerais","aimerais","aimerait","aimerions","aimeriez","aimeraient"],"subj":["aime","aimes","aime","aimions","aimiez","aiment"],"pqp":["avais aimé","avais aimé","avait aimé","avions aimé","aviez aimé","avaient aimé"],"condp":["aurais aimé","aurais aimé","aurait aimé","aurions aimé","auriez aimé","auraient aimé"]}},{"v":"finir","a":"يخلّص","t":{"pres":["finis","finis","finit","finissons","finissez","finissent"],"pc":["ai fini","as fini","a fini","avons fini","avez fini","ont fini"],"imp":["finissais","finissais","finissait","finissions","finissiez","finissaient"],"fut":["finirai","finiras","finira","finirons","finirez","finiront"],"cond":["finirais","finirais","finirait","finirions","finiriez","finiraient"],"subj":["finisse","finisses","finisse","finissions","finissiez","finissent"],"pqp":["avais fini","avais fini","avait fini","avions fini","aviez fini","avaient fini"],"condp":["aurais fini","aurais fini","aurait fini","aurions fini","auriez fini","auraient fini"]}},{"v":"choisir","a":"يختار","t":{"pres":["choisis","choisis","choisit","choisissons","choisissez","choisissent"],"pc":["ai choisi","as choisi","a choisi","avons choisi","avez choisi","ont choisi"],"imp":["choisissais","choisissais","choisissait","choisissions","choisissiez","choisissaient"],"fut":["choisirai","choisiras","choisira","choisirons","choisirez","choisiront"],"cond":["choisirais","choisirais","choisirait","choisirions","choisiriez","choisiraient"],"subj":["choisisse","choisisses","choisisse","choisissions","choisissiez","choisissent"],"pqp":["avais choisi","avais choisi","avait choisi","avions choisi","aviez choisi","avaient choisi"],"condp":["aurais choisi","aurais choisi","aurait choisi","aurions choisi","auriez choisi","auraient choisi"]}},{"v":"lire","a":"يقرا","t":{"pres":["lis","lis","lit","lisons","lisez","lisent"],"pc":["ai lu","as lu","a lu","avons lu","avez lu","ont lu"],"imp":["lisais","lisais","lisait","lisions","lisiez","lisaient"],"fut":["lirai","liras","lira","lirons","lirez","liront"],"cond":["lirais","lirais","lirait","lirions","liriez","liraient"],"subj":["lise","lises","lise","lisions","lisiez","lisent"],"pqp":["avais lu","avais lu","avait lu","avions lu","aviez lu","avaient lu"],"condp":["aurais lu","aurais lu","aurait lu","aurions lu","auriez lu","auraient lu"]}},{"v":"écrire","a":"يكتب","t":{"pres":["écris","écris","écrit","écrivons","écrivez","écrivent"],"pc":["ai écrit","as écrit","a écrit","avons écrit","avez écrit","ont écrit"],"imp":["écrivais","écrivais","écrivait","écrivions","écriviez","écrivaient"],"fut":["écrirai","écriras","écrira","écrirons","écrirez","écriront"],"cond":["écrirais","écrirais","écrirait","écririons","écririez","écriraient"],"subj":["écrive","écrives","écrive","écrivions","écriviez","écrivent"],"pqp":["avais écrit","avais écrit","avait écrit","avions écrit","aviez écrit","avaient écrit"],"condp":["aurais écrit","aurais écrit","aurait écrit","aurions écrit","auriez écrit","auraient écrit"]}},{"v":"vivre","a":"يعيش","t":{"pres":["vis","vis","vit","vivons","vivez","vivent"],"pc":["ai vécu","as vécu","a vécu","avons vécu","avez vécu","ont vécu"],"imp":["vivais","vivais","vivait","vivions","viviez","vivaient"],"fut":["vivrai","vivras","vivra","vivrons","vivrez","vivront"],"cond":["vivrais","vivrais","vivrait","vivrions","vivriez","vivraient"],"subj":["vive","vives","vive","vivions","viviez","vivent"],"pqp":["avais vécu","avais vécu","avait vécu","avions vécu","aviez vécu","avaient vécu"],"condp":["aurais vécu","aurais vécu","aurait vécu","aurions vécu","auriez vécu","auraient vécu"]}},{"v":"ouvrir","a":"يفتح","t":{"pres":["ouvre","ouvres","ouvre","ouvrons","ouvrez","ouvrent"],"pc":["ai ouvert","as ouvert","a ouvert","avons ouvert","avez ouvert","ont ouvert"],"imp":["ouvrais","ouvrais","ouvrait","ouvrions","ouvriez","ouvraient"],"fut":["ouvrirai","ouvriras","ouvrira","ouvrirons","ouvrirez","ouvriront"],"cond":["ouvrirais","ouvrirais","ouvrirait","ouvririons","ouvririez","ouvriraient"],"subj":["ouvre","ouvres","ouvre","ouvrions","ouvriez","ouvrent"],"pqp":["avais ouvert","avais ouvert","avait ouvert","avions ouvert","aviez ouvert","avaient ouvert"],"condp":["aurais ouvert","aurais ouvert","aurait ouvert","aurions ouvert","auriez ouvert","auraient ouvert"]}},{"v":"recevoir","a":"يستلم","t":{"pres":["reçois","reçois","reçoit","recevons","recevez","reçoivent"],"pc":["ai reçu","as reçu","a reçu","avons reçu","avez reçu","ont reçu"],"imp":["recevais","recevais","recevait","recevions","receviez","recevaient"],"fut":["recevrai","recevras","recevra","recevrons","recevrez","recevront"],"cond":["recevrais","recevrais","recevrait","recevrions","recevriez","recevraient"],"subj":["reçoive","reçoives","reçoive","recevions","receviez","reçoivent"],"pqp":["avais reçu","avais reçu","avait reçu","avions reçu","aviez reçu","avaient reçu"],"condp":["aurais reçu","aurais reçu","aurait reçu","aurions reçu","auriez reçu","auraient reçu"]}},{"v":"attendre","a":"يستنى","t":{"pres":["attends","attends","attend","attendons","attendez","attendent"],"pc":["ai attendu","as attendu","a attendu","avons attendu","avez attendu","ont attendu"],"imp":["attendais","attendais","attendait","attendions","attendiez","attendaient"],"fut":["attendrai","attendras","attendra","attendrons","attendrez","attendront"],"cond":["attendrais","attendrais","attendrait","attendrions","attendriez","attendraient"],"subj":["attende","attendes","attende","attendions","attendiez","attendent"],"pqp":["avais attendu","avais attendu","avait attendu","avions attendu","aviez attendu","avaient attendu"],"condp":["aurais attendu","aurais attendu","aurait attendu","aurions attendu","auriez attendu","auraient attendu"]}},{"v":"comprendre","a":"يفهم","t":{"pres":["comprends","comprends","comprend","comprenons","comprenez","comprennent"],"pc":["ai compris","as compris","a compris","avons compris","avez compris","ont compris"],"imp":["comprenais","comprenais","comprenait","comprenions","compreniez","comprenaient"],"fut":["comprendrai","comprendras","comprendra","comprendrons","comprendrez","comprendront"],"cond":["comprendrais","comprendrais","comprendrait","comprendrions","comprendriez","comprendraient"],"subj":["comprenne","comprennes","comprenne","comprenions","compreniez","comprennent"],"pqp":["avais compris","avais compris","avait compris","avions compris","aviez compris","avaient compris"],"condp":["aurais compris","aurais compris","aurait compris","aurions compris","auriez compris","auraient compris"]}},{"v":"acheter","a":"يشتري","t":{"pres":["achète","achètes","achète","achetons","achetez","achètent"],"pc":["ai acheté","as acheté","a acheté","avons acheté","avez acheté","ont acheté"],"imp":["achetais","achetais","achetait","achetions","achetiez","achetaient"],"fut":["achèterai","achèteras","achètera","achèterons","achèterez","achèteront"],"cond":["achèterais","achèterais","achèterait","achèterions","achèteriez","achèteraient"],"subj":["achète","achètes","achète","achetions","achetiez","achètent"],"pqp":["avais acheté","avais acheté","avait acheté","avions acheté","aviez acheté","avaient acheté"],"condp":["aurais acheté","aurais acheté","aurait acheté","aurions acheté","auriez acheté","auraient acheté"]}},{"v":"appeler","a":"ينادي / يتصل","t":{"pres":["appelle","appelles","appelle","appelons","appelez","appellent"],"pc":["ai appelé","as appelé","a appelé","avons appelé","avez appelé","ont appelé"],"imp":["appelais","appelais","appelait","appelions","appeliez","appelaient"],"fut":["appellerai","appelleras","appellera","appellerons","appellerez","appelleront"],"cond":["appellerais","appellerais","appellerait","appellerions","appelleriez","appelleraient"],"subj":["appelle","appelles","appelle","appelions","appeliez","appellent"],"pqp":["avais appelé","avais appelé","avait appelé","avions appelé","aviez appelé","avaient appelé"],"condp":["aurais appelé","aurais appelé","aurait appelé","aurions appelé","auriez appelé","auraient appelé"]}},{"v":"dormir","a":"ينام","t":{"pres":["dors","dors","dort","dormons","dormez","dorment"],"pc":["ai dormi","as dormi","a dormi","avons dormi","avez dormi","ont dormi"],"imp":["dormais","dormais","dormait","dormions","dormiez","dormaient"],"fut":["dormirai","dormiras","dormira","dormirons","dormirez","dormiront"],"cond":["dormirais","dormirais","dormirait","dormirions","dormiriez","dormiraient"],"subj":["dorme","dormes","dorme","dormions","dormiez","dorment"],"pqp":["avais dormi","avais dormi","avait dormi","avions dormi","aviez dormi","avaient dormi"],"condp":["aurais dormi","aurais dormi","aurait dormi","aurions dormi","auriez dormi","auraient dormi"]}},{"v":"tenir","a":"يمسك","t":{"pres":["tiens","tiens","tient","tenons","tenez","tiennent"],"pc":["ai tenu","as tenu","a tenu","avons tenu","avez tenu","ont tenu"],"imp":["tenais","tenais","tenait","tenions","teniez","tenaient"],"fut":["tiendrai","tiendras","tiendra","tiendrons","tiendrez","tiendront"],"cond":["tiendrais","tiendrais","tiendrait","tiendrions","tiendriez","tiendraient"],"subj":["tienne","tiennes","tienne","tenions","teniez","tiennent"],"pqp":["avais tenu","avais tenu","avait tenu","avions tenu","aviez tenu","avaient tenu"],"condp":["aurais tenu","aurais tenu","aurait tenu","aurions tenu","auriez tenu","auraient tenu"]}}],"es":[{"v":"ser","a":"يكون (صفة دائمة)","t":{"pres":["soy","eres","es","somos","sois","son"],"perf":["he sido","has sido","ha sido","hemos sido","habéis sido","han sido"],"indef":["fui","fuiste","fue","fuimos","fuisteis","fueron"],"imp":["era","eras","era","éramos","erais","eran"],"fut":["seré","serás","será","seremos","seréis","serán"],"cond":["sería","serías","sería","seríamos","seríais","serían"],"subj":["sea","seas","sea","seamos","seáis","sean"],"subji":["fuera","fueras","fuera","fuéramos","fuerais","fueran"]}},{"v":"estar","a":"يكون (حالة أو مكان)","t":{"pres":["estoy","estás","está","estamos","estáis","están"],"perf":["he estado","has estado","ha estado","hemos estado","habéis estado","han estado"],"indef":["estuve","estuviste","estuvo","estuvimos","estuvisteis","estuvieron"],"imp":["estaba","estabas","estaba","estábamos","estabais","estaban"],"fut":["estaré","estarás","estará","estaremos","estaréis","estarán"],"cond":["estaría","estarías","estaría","estaríamos","estaríais","estarían"],"subj":["esté","estés","esté","estemos","estéis","estén"],"subji":["estuviera","estuvieras","estuviera","estuviéramos","estuvierais","estuvieran"]}},{"v":"tener","a":"عنده / يملك","t":{"pres":["tengo","tienes","tiene","tenemos","tenéis","tienen"],"perf":["he tenido","has tenido","ha tenido","hemos tenido","habéis tenido","han tenido"],"indef":["tuve","tuviste","tuvo","tuvimos","tuvisteis","tuvieron"],"imp":["tenía","tenías","tenía","teníamos","teníais","tenían"],"fut":["tendré","tendrás","tendrá","tendremos","tendréis","tendrán"],"cond":["tendría","tendrías","tendría","tendríamos","tendríais","tendrían"],"subj":["tenga","tengas","tenga","tengamos","tengáis","tengan"],"subji":["tuviera","tuvieras","tuviera","tuviéramos","tuvierais","tuvieran"]}},{"v":"ir","a":"يروح","t":{"pres":["voy","vas","va","vamos","vais","van"],"perf":["he ido","has ido","ha ido","hemos ido","habéis ido","han ido"],"indef":["fui","fuiste","fue","fuimos","fuisteis","fueron"],"imp":["iba","ibas","iba","íbamos","ibais","iban"],"fut":["iré","irás","irá","iremos","iréis","irán"],"cond":["iría","irías","iría","iríamos","iríais","irían"],"subj":["vaya","vayas","vaya","vayamos","vayáis","vayan"],"subji":["fuera","fueras","fuera","fuéramos","fuerais","fueran"]}},{"v":"hacer","a":"يعمل","t":{"pres":["hago","haces","hace","hacemos","hacéis","hacen"],"perf":["he hecho","has hecho","ha hecho","hemos hecho","habéis hecho","han hecho"],"indef":["hice","hiciste","hizo","hicimos","hicisteis","hicieron"],"imp":["hacía","hacías","hacía","hacíamos","hacíais","hacían"],"fut":["haré","harás","hará","haremos","haréis","harán"],"cond":["haría","harías","haría","haríamos","haríais","harían"],"subj":["haga","hagas","haga","hagamos","hagáis","hagan"],"subji":["hiciera","hicieras","hiciera","hiciéramos","hicierais","hicieran"]}},{"v":"decir","a":"يقول","t":{"pres":["digo","dices","dice","decimos","decís","dicen"],"perf":["he dicho","has dicho","ha dicho","hemos dicho","habéis dicho","han dicho"],"indef":["dije","dijiste","dijo","dijimos","dijisteis","dijeron"],"imp":["decía","decías","decía","decíamos","decíais","decían"],"fut":["diré","dirás","dirá","diremos","diréis","dirán"],"cond":["diría","dirías","diría","diríamos","diríais","dirían"],"subj":["diga","digas","diga","digamos","digáis","digan"],"subji":["dijera","dijeras","dijera","dijéramos","dijerais","dijeran"]}},{"v":"poder","a":"يقدر","t":{"pres":["puedo","puedes","puede","podemos","podéis","pueden"],"perf":["he podido","has podido","ha podido","hemos podido","habéis podido","han podido"],"indef":["pude","pudiste","pudo","pudimos","pudisteis","pudieron"],"imp":["podía","podías","podía","podíamos","podíais","podían"],"fut":["podré","podrás","podrá","podremos","podréis","podrán"],"cond":["podría","podrías","podría","podríamos","podríais","podrían"],"subj":["pueda","puedas","pueda","podamos","podáis","puedan"],"subji":["pudiera","pudieras","pudiera","pudiéramos","pudierais","pudieran"]}},{"v":"querer","a":"يريد / يحب","t":{"pres":["quiero","quieres","quiere","queremos","queréis","quieren"],"perf":["he querido","has querido","ha querido","hemos querido","habéis querido","han querido"],"indef":["quise","quisiste","quiso","quisimos","quisisteis","quisieron"],"imp":["quería","querías","quería","queríamos","queríais","querían"],"fut":["querré","querrás","querrá","querremos","querréis","querrán"],"cond":["querría","querrías","querría","querríamos","querríais","querrían"],"subj":["quiera","quieras","quiera","queramos","queráis","quieran"],"subji":["quisiera","quisieras","quisiera","quisiéramos","quisierais","quisieran"]}},{"v":"saber","a":"يعرف (معلومة)","t":{"pres":["sé","sabes","sabe","sabemos","sabéis","saben"],"perf":["he sabido","has sabido","ha sabido","hemos sabido","habéis sabido","han sabido"],"indef":["supe","supiste","supo","supimos","supisteis","supieron"],"imp":["sabía","sabías","sabía","sabíamos","sabíais","sabían"],"fut":["sabré","sabrás","sabrá","sabremos","sabréis","sabrán"],"cond":["sabría","sabrías","sabría","sabríamos","sabríais","sabrían"],"subj":["sepa","sepas","sepa","sepamos","sepáis","sepan"],"subji":["supiera","supieras","supiera","supiéramos","supierais","supieran"]}},{"v":"venir","a":"ييجي","t":{"pres":["vengo","vienes","viene","venimos","venís","vienen"],"perf":["he venido","has venido","ha venido","hemos venido","habéis venido","han venido"],"indef":["vine","viniste","vino","vinimos","vinisteis","vinieron"],"imp":["venía","venías","venía","veníamos","veníais","venían"],"fut":["vendré","vendrás","vendrá","vendremos","vendréis","vendrán"],"cond":["vendría","vendrías","vendría","vendríamos","vendríais","vendrían"],"subj":["venga","vengas","venga","vengamos","vengáis","vengan"],"subji":["viniera","vinieras","viniera","viniéramos","vinierais","vinieran"]}},{"v":"poner","a":"يحط","t":{"pres":["pongo","pones","pone","ponemos","ponéis","ponen"],"perf":["he puesto","has puesto","ha puesto","hemos puesto","habéis puesto","han puesto"],"indef":["puse","pusiste","puso","pusimos","pusisteis","pusieron"],"imp":["ponía","ponías","ponía","poníamos","poníais","ponían"],"fut":["pondré","pondrás","pondrá","pondremos","pondréis","pondrán"],"cond":["pondría","pondrías","pondría","pondríamos","pondríais","pondrían"],"subj":["ponga","pongas","ponga","pongamos","pongáis","pongan"],"subji":["pusiera","pusieras","pusiera","pusiéramos","pusierais","pusieran"]}},{"v":"salir","a":"يخرج","t":{"pres":["salgo","sales","sale","salimos","salís","salen"],"perf":["he salido","has salido","ha salido","hemos salido","habéis salido","han salido"],"indef":["salí","saliste","salió","salimos","salisteis","salieron"],"imp":["salía","salías","salía","salíamos","salíais","salían"],"fut":["saldré","saldrás","saldrá","saldremos","saldréis","saldrán"],"cond":["saldría","saldrías","saldría","saldríamos","saldríais","saldrían"],"subj":["salga","salgas","salga","salgamos","salgáis","salgan"],"subji":["saliera","salieras","saliera","saliéramos","salierais","salieran"]}},{"v":"ver","a":"يشوف","t":{"pres":["veo","ves","ve","vemos","veis","ven"],"perf":["he visto","has visto","ha visto","hemos visto","habéis visto","han visto"],"indef":["vi","viste","vio","vimos","visteis","vieron"],"imp":["veía","veías","veía","veíamos","veíais","veían"],"fut":["veré","verás","verá","veremos","veréis","verán"],"cond":["vería","verías","vería","veríamos","veríais","verían"],"subj":["vea","veas","vea","veamos","veáis","vean"],"subji":["viera","vieras","viera","viéramos","vierais","vieran"]}},{"v":"dar","a":"يدّي","t":{"pres":["doy","das","da","damos","dais","dan"],"perf":["he dado","has dado","ha dado","hemos dado","habéis dado","han dado"],"indef":["di","diste","dio","dimos","disteis","dieron"],"imp":["daba","dabas","daba","dábamos","dabais","daban"],"fut":["daré","darás","dará","daremos","daréis","darán"],"cond":["daría","darías","daría","daríamos","daríais","darían"],"subj":["dé","des","dé","demos","deis","den"],"subji":["diera","dieras","diera","diéramos","dierais","dieran"]}},{"v":"conocer","a":"يعرف (شخص أو مكان)","t":{"pres":["conozco","conoces","conoce","conocemos","conocéis","conocen"],"perf":["he conocido","has conocido","ha conocido","hemos conocido","habéis conocido","han conocido"],"indef":["conocí","conociste","conoció","conocimos","conocisteis","conocieron"],"imp":["conocía","conocías","conocía","conocíamos","conocíais","conocían"],"fut":["conoceré","conocerás","conocerá","conoceremos","conoceréis","conocerán"],"cond":["conocería","conocerías","conocería","conoceríamos","conoceríais","conocerían"],"subj":["conozca","conozcas","conozca","conozcamos","conozcáis","conozcan"],"subji":["conociera","conocieras","conociera","conociéramos","conocierais","conocieran"]}},{"v":"pedir","a":"يطلب","t":{"pres":["pido","pides","pide","pedimos","pedís","piden"],"perf":["he pedido","has pedido","ha pedido","hemos pedido","habéis pedido","han pedido"],"indef":["pedí","pediste","pidió","pedimos","pedisteis","pidieron"],"imp":["pedía","pedías","pedía","pedíamos","pedíais","pedían"],"fut":["pediré","pedirás","pedirá","pediremos","pediréis","pedirán"],"cond":["pediría","pedirías","pediría","pediríamos","pediríais","pedirían"],"subj":["pida","pidas","pida","pidamos","pidáis","pidan"],"subji":["pidiera","pidieras","pidiera","pidiéramos","pidierais","pidieran"]}},{"v":"dormir","a":"ينام","t":{"pres":["duermo","duermes","duerme","dormimos","dormís","duermen"],"perf":["he dormido","has dormido","ha dormido","hemos dormido","habéis dormido","han dormido"],"indef":["dormí","dormiste","durmió","dormimos","dormisteis","durmieron"],"imp":["dormía","dormías","dormía","dormíamos","dormíais","dormían"],"fut":["dormiré","dormirás","dormirá","dormiremos","dormiréis","dormirán"],"cond":["dormiría","dormirías","dormiría","dormiríamos","dormiríais","dormirían"],"subj":["duerma","duermas","duerma","durmamos","durmáis","duerman"],"subji":["durmiera","durmieras","durmiera","durmiéramos","durmierais","durmieran"]}},{"v":"volver","a":"يرجع","t":{"pres":["vuelvo","vuelves","vuelve","volvemos","volvéis","vuelven"],"perf":["he vuelto","has vuelto","ha vuelto","hemos vuelto","habéis vuelto","han vuelto"],"indef":["volví","volviste","volvió","volvimos","volvisteis","volvieron"],"imp":["volvía","volvías","volvía","volvíamos","volvíais","volvían"],"fut":["volveré","volverás","volverá","volveremos","volveréis","volverán"],"cond":["volvería","volverías","volvería","volveríamos","volveríais","volverían"],"subj":["vuelva","vuelvas","vuelva","volvamos","volváis","vuelvan"],"subji":["volviera","volvieras","volviera","volviéramos","volvierais","volvieran"]}},{"v":"jugar","a":"يلعب","t":{"pres":["juego","juegas","juega","jugamos","jugáis","juegan"],"perf":["he jugado","has jugado","ha jugado","hemos jugado","habéis jugado","han jugado"],"indef":["jugué","jugaste","jugó","jugamos","jugasteis","jugaron"],"imp":["jugaba","jugabas","jugaba","jugábamos","jugabais","jugaban"],"fut":["jugaré","jugarás","jugará","jugaremos","jugaréis","jugarán"],"cond":["jugaría","jugarías","jugaría","jugaríamos","jugaríais","jugarían"],"subj":["juegue","juegues","juegue","juguemos","juguéis","jueguen"],"subji":["jugara","jugaras","jugara","jugáramos","jugarais","jugaran"]}},{"v":"empezar","a":"يبدأ","t":{"pres":["empiezo","empiezas","empieza","empezamos","empezáis","empiezan"],"perf":["he empezado","has empezado","ha empezado","hemos empezado","habéis empezado","han empezado"],"indef":["empecé","empezaste","empezó","empezamos","empezasteis","empezaron"],"imp":["empezaba","empezabas","empezaba","empezábamos","empezabais","empezaban"],"fut":["empezaré","empezarás","empezará","empezaremos","empezaréis","empezarán"],"cond":["empezaría","empezarías","empezaría","empezaríamos","empezaríais","empezarían"],"subj":["empiece","empieces","empiece","empecemos","empecéis","empiecen"],"subji":["empezara","empezaras","empezara","empezáramos","empezarais","empezaran"]}},{"v":"pensar","a":"يفكر","t":{"pres":["pienso","piensas","piensa","pensamos","pensáis","piensan"],"perf":["he pensado","has pensado","ha pensado","hemos pensado","habéis pensado","han pensado"],"indef":["pensé","pensaste","pensó","pensamos","pensasteis","pensaron"],"imp":["pensaba","pensabas","pensaba","pensábamos","pensabais","pensaban"],"fut":["pensaré","pensarás","pensará","pensaremos","pensaréis","pensarán"],"cond":["pensaría","pensarías","pensaría","pensaríamos","pensaríais","pensarían"],"subj":["piense","pienses","piense","pensemos","penséis","piensen"],"subji":["pensara","pensaras","pensara","pensáramos","pensarais","pensaran"]}},{"v":"sentir","a":"يحس","t":{"pres":["siento","sientes","siente","sentimos","sentís","sienten"],"perf":["he sentido","has sentido","ha sentido","hemos sentido","habéis sentido","han sentido"],"indef":["sentí","sentiste","sintió","sentimos","sentisteis","sintieron"],"imp":["sentía","sentías","sentía","sentíamos","sentíais","sentían"],"fut":["sentiré","sentirás","sentirá","sentiremos","sentiréis","sentirán"],"cond":["sentiría","sentirías","sentiría","sentiríamos","sentiríais","sentirían"],"subj":["sienta","sientas","sienta","sintamos","sintáis","sientan"],"subji":["sintiera","sintieras","sintiera","sintiéramos","sintierais","sintieran"]}},{"v":"traer","a":"يجيب","t":{"pres":["traigo","traes","trae","traemos","traéis","traen"],"perf":["he traído","has traído","ha traído","hemos traído","habéis traído","han traído"],"indef":["traje","trajiste","trajo","trajimos","trajisteis","trajeron"],"imp":["traía","traías","traía","traíamos","traíais","traían"],"fut":["traeré","traerás","traerá","traeremos","traeréis","traerán"],"cond":["traería","traerías","traería","traeríamos","traeríais","traerían"],"subj":["traiga","traigas","traiga","traigamos","traigáis","traigan"],"subji":["trajera","trajeras","trajera","trajéramos","trajerais","trajeran"]}},{"v":"oír","a":"يسمع","t":{"pres":["oigo","oyes","oye","oímos","oís","oyen"],"perf":["he oído","has oído","ha oído","hemos oído","habéis oído","han oído"],"indef":["oí","oíste","oyó","oímos","oísteis","oyeron"],"imp":["oía","oías","oía","oíamos","oíais","oían"],"fut":["oiré","oirás","oirá","oiremos","oiréis","oirán"],"cond":["oiría","oirías","oiría","oiríamos","oiríais","oirían"],"subj":["oiga","oigas","oiga","oigamos","oigáis","oigan"],"subji":["oyera","oyeras","oyera","oyéramos","oyerais","oyeran"]}},{"v":"conducir","a":"يسوق","t":{"pres":["conduzco","conduces","conduce","conducimos","conducís","conducen"],"perf":["he conducido","has conducido","ha conducido","hemos conducido","habéis conducido","han conducido"],"indef":["conduje","condujiste","condujo","condujimos","condujisteis","condujeron"],"imp":["conducía","conducías","conducía","conducíamos","conducíais","conducían"],"fut":["conduciré","conducirás","conducirá","conduciremos","conduciréis","conducirán"],"cond":["conduciría","conducirías","conduciría","conduciríamos","conduciríais","conducirían"],"subj":["conduzca","conduzcas","conduzca","conduzcamos","conduzcáis","conduzcan"],"subji":["condujera","condujeras","condujera","condujéramos","condujerais","condujeran"]}},{"v":"hablar","a":"يتكلم","t":{"pres":["hablo","hablas","habla","hablamos","habláis","hablan"],"perf":["he hablado","has hablado","ha hablado","hemos hablado","habéis hablado","han hablado"],"indef":["hablé","hablaste","habló","hablamos","hablasteis","hablaron"],"imp":["hablaba","hablabas","hablaba","hablábamos","hablabais","hablaban"],"fut":["hablaré","hablarás","hablará","hablaremos","hablaréis","hablarán"],"cond":["hablaría","hablarías","hablaría","hablaríamos","hablaríais","hablarían"],"subj":["hable","hables","hable","hablemos","habléis","hablen"],"subji":["hablara","hablaras","hablara","habláramos","hablarais","hablaran"]}},{"v":"comer","a":"ياكل","t":{"pres":["como","comes","come","comemos","coméis","comen"],"perf":["he comido","has comido","ha comido","hemos comido","habéis comido","han comido"],"indef":["comí","comiste","comió","comimos","comisteis","comieron"],"imp":["comía","comías","comía","comíamos","comíais","comían"],"fut":["comeré","comerás","comerá","comeremos","comeréis","comerán"],"cond":["comería","comerías","comería","comeríamos","comeríais","comerían"],"subj":["coma","comas","coma","comamos","comáis","coman"],"subji":["comiera","comieras","comiera","comiéramos","comierais","comieran"]}},{"v":"vivir","a":"يعيش","t":{"pres":["vivo","vives","vive","vivimos","vivís","viven"],"perf":["he vivido","has vivido","ha vivido","hemos vivido","habéis vivido","han vivido"],"indef":["viví","viviste","vivió","vivimos","vivisteis","vivieron"],"imp":["vivía","vivías","vivía","vivíamos","vivíais","vivían"],"fut":["viviré","vivirás","vivirá","viviremos","viviréis","vivirán"],"cond":["viviría","vivirías","viviría","viviríamos","viviríais","vivirían"],"subj":["viva","vivas","viva","vivamos","viváis","vivan"],"subji":["viviera","vivieras","viviera","viviéramos","vivierais","vivieran"]}},{"v":"llegar","a":"يوصل","t":{"pres":["llego","llegas","llega","llegamos","llegáis","llegan"],"perf":["he llegado","has llegado","ha llegado","hemos llegado","habéis llegado","han llegado"],"indef":["llegué","llegaste","llegó","llegamos","llegasteis","llegaron"],"imp":["llegaba","llegabas","llegaba","llegábamos","llegabais","llegaban"],"fut":["llegaré","llegarás","llegará","llegaremos","llegaréis","llegarán"],"cond":["llegaría","llegarías","llegaría","llegaríamos","llegaríais","llegarían"],"subj":["llegue","llegues","llegue","lleguemos","lleguéis","lleguen"],"subji":["llegara","llegaras","llegara","llegáramos","llegarais","llegaran"]}},{"v":"seguir","a":"يكمّل / يتبع","t":{"pres":["sigo","sigues","sigue","seguimos","seguís","siguen"],"perf":["he seguido","has seguido","ha seguido","hemos seguido","habéis seguido","han seguido"],"indef":["seguí","seguiste","siguió","seguimos","seguisteis","siguieron"],"imp":["seguía","seguías","seguía","seguíamos","seguíais","seguían"],"fut":["seguiré","seguirás","seguirá","seguiremos","seguiréis","seguirán"],"cond":["seguiría","seguirías","seguiría","seguiríamos","seguiríais","seguirían"],"subj":["siga","sigas","siga","sigamos","sigáis","sigan"],"subji":["siguiera","siguieras","siguiera","siguiéramos","siguierais","siguieran"]}},{"v":"encontrar","a":"يلاقي","t":{"pres":["encuentro","encuentras","encuentra","encontramos","encontráis","encuentran"],"perf":["he encontrado","has encontrado","ha encontrado","hemos encontrado","habéis encontrado","han encontrado"],"indef":["encontré","encontraste","encontró","encontramos","encontrasteis","encontraron"],"imp":["encontraba","encontrabas","encontraba","encontrábamos","encontrabais","encontraban"],"fut":["encontraré","encontrarás","encontrará","encontraremos","encontraréis","encontrarán"],"cond":["encontraría","encontrarías","encontraría","encontraríamos","encontraríais","encontrarían"],"subj":["encuentre","encuentres","encuentre","encontremos","encontréis","encuentren"],"subji":["encontrara","encontraras","encontrara","encontráramos","encontrarais","encontraran"]}},{"v":"buscar","a":"يدوّر على","t":{"pres":["busco","buscas","busca","buscamos","buscáis","buscan"],"perf":["he buscado","has buscado","ha buscado","hemos buscado","habéis buscado","han buscado"],"indef":["busqué","buscaste","buscó","buscamos","buscasteis","buscaron"],"imp":["buscaba","buscabas","buscaba","buscábamos","buscabais","buscaban"],"fut":["buscaré","buscarás","buscará","buscaremos","buscaréis","buscarán"],"cond":["buscaría","buscarías","buscaría","buscaríamos","buscaríais","buscarían"],"subj":["busque","busques","busque","busquemos","busquéis","busquen"],"subji":["buscara","buscaras","buscara","buscáramos","buscarais","buscaran"]}},{"v":"leer","a":"يقرا","t":{"pres":["leo","lees","lee","leemos","leéis","leen"],"perf":["he leído","has leído","ha leído","hemos leído","habéis leído","han leído"],"indef":["leí","leíste","leyó","leímos","leísteis","leyeron"],"imp":["leía","leías","leía","leíamos","leíais","leían"],"fut":["leeré","leerás","leerá","leeremos","leeréis","leerán"],"cond":["leería","leerías","leería","leeríamos","leeríais","leerían"],"subj":["lea","leas","lea","leamos","leáis","lean"],"subji":["leyera","leyeras","leyera","leyéramos","leyerais","leyeran"]}}]};
+function merge(a,b){var o=[];LV.forEach(function(lv){a.concat(b).forEach(function(r){if(r[0]===lv)o.push(r);});});return o;}
+function pack(lang,rows){
+  var n={};
+  return rows.map(function(r){
+    var lv=r[0]; n[lv]=(n[lv]||0)+1;
+    var id=lang+"-"+lv+"-"+n[lv];
+    return {id:id,lv:lv,title:r[1],note:r[3]||"",items:r[2].map(function(s,i){var p=s.split("|");return {id:id+"-"+i,t:p[0],a:p[1],lv:lv};})};
+  });
+}
+var TENSES={
+  fr:[
+    ["pres","المضارع","présent","A1","للحاضر والعادة. الأفعال المنتظمة اللي بتنتهي بـ -er نهاياتها: -e, -es, -e, -ons, -ez, -ent. وأهم الشواذ: être وavoir وaller وfaire."],
+    ["pc","الماضي التام","passé composé","A2","avoir أو être في المضارع + اسم المفعول: j'ai mangé. أفعال الحركة (aller, venir, partir, sortir…) بتاخد être وبتتفق مع الفاعل: elle est allée، nous sommes partis."],
+    ["imp","الماضي المستمر","imparfait","A2","خد جذع nous في المضارع (nous parlons ← parl-) وزوّد: -ais, -ais, -ait, -ions, -iez, -aient. للوصف والعادة في الماضي. الشاذ الوحيد: être ← ét-."],
+    ["fut","المستقبل","futur simple","B1","المصدر + -ai, -as, -a, -ons, -ez, -ont: je parlerai. فيه جذور شاذة لازم تتحفظ: ser-, aur-, ir-, fer-, pourr-, voudr-, viendr-, verr-, devr-, saur-."],
+    ["cond","الشرطي","conditionnel présent","B1","جذع المستقبل + نهايات الـ imparfait: je voudrais، tu pourrais، il serait. للطلب المهذب والتمني والشرط: si j'avais le temps, je viendrais."],
+    ["pqp","الماضي البعيد","plus-que-parfait","B1","avoir أو être في الـ imparfait + اسم المفعول: j'avais fini (كنت خلّصت). لحاجة حصلت قبل حاجة تانية في الماضي."],
+    ["subj","الـ subjonctif","subjonctif présent","B2","بعد il faut que، je veux que، bien que، pour que… خد جذع ils في المضارع (ils finissent ← finiss-) وزوّد: -e, -es, -e, -ions, -iez, -ent. شواذ مهمة: sois, aie, aille, fasse, puisse, sache, veuille."],
+    ["condp","الشرطي الماضي","conditionnel passé","B2","avoir أو être في الـ conditionnel + اسم المفعول: j'aurais dû (كان المفروض)، je serais venu (كنت جيت). مع si + plus-que-parfait للندم."]
+  ],
+  es:[
+    ["pres","المضارع","presente","A1","-ar: -o, -as, -a, -amos, -áis, -an. -er: -o, -es, -e, -emos, -éis, -en. -ir زي -er بس nosotros -imos وvosotros -ís. وكتير من الأفعال جذرها بيتغير: quiero، puedo، pido."],
+    ["perf","الماضي القريب","pretérito perfecto","A2","haber (he, has, ha, hemos, habéis, han) + اسم المفعول: he comido. لماضي قريب أو ليه علاقة بالنهارده: hoy he trabajado mucho. اسم المفعول ثابت مبيتغيرش."],
+    ["indef","الماضي البسيط","pretérito indefinido","A2","لحدث خلص في وقت محدد: ayer comí. -ar: -é, -aste, -ó, -amos, -asteis, -aron. -er/-ir: -í, -iste, -ió, -imos, -isteis, -ieron. وفيه شواذ كتير: fui, tuve, hice, dije, pude."],
+    ["imp","الماضي المستمر","pretérito imperfecto","A2","-ar: -aba, -abas, -aba, -ábamos, -abais, -aban. -er/-ir: -ía, -ías, -ía… للوصف والعادة. الشواذ تلاتة بس: ser (era)، ir (iba)، ver (veía)."],
+    ["fut","المستقبل","futuro simple","B1","المصدر + -é, -ás, -á, -emos, -éis, -án: hablaré. جذور شاذة: tendr-, pondr-, saldr-, vendr-, podr-, sabr-, querr-, har-, dir-."],
+    ["cond","الشرطي","condicional","B1","جذع المستقبل + -ía, -ías, -ía, -íamos, -íais, -ían: me gustaría، podría. للطلب المهذب والشرط: si tuviera tiempo, iría."],
+    ["subj","الـ subjuntivo","subjuntivo presente","B2","جذع yo في المضارع مع عكس الحرف: -ar ← -e (hable)، -er/-ir ← -a (coma, tenga). بعد quiero que، ojalá، para que، cuando للمستقبل. شواذ: sea, esté, vaya, haya, sepa, dé."],
+    ["subji","subjuntivo الماضي","subjuntivo imperfecto","B2","جذع ellos في الـ indefinido (tuvieron ← tuv-) + -iera / -ara: tuviera، hablara. مع si للشرط غير الحقيقي: si tuviera dinero, viajaría."]
+  ]
+};
+var PRON={fr:["je","tu","il / elle","nous","vous","ils / elles"],es:["yo","tú","él / ella / usted","nosotros","vosotros","ellos / ustedes"]};
+var LANGS={
+  fr:{name:"فرنساوي",tts:"fr-FR",acc:["é","è","ê","à","â","ç","î","ï","ô","û","ù","œ","ë"],units:pack("fr",merge(FR,FR_NEW)),conj:CONJ.fr,tenses:TENSES.fr,read:READ.fr},
+  es:{name:"إسباني",tts:"es-ES",acc:["á","é","í","ó","ú","ñ","ü","¿","¡"],units:pack("es",merge(ES,ES_NEW)),conj:CONJ.es,tenses:TENSES.es,read:READ.es}
+};
+Object.keys(LANGS).forEach(function(k){LANGS[k].all=[].concat.apply([],LANGS[k].units.map(function(u){return u.items;}));});
+
+/* ---------- state ---------- */
+function fresh(){return {lang:"fr",xp:0,streak:0,bestStreak:0,last:"",items:{},done:{},open:false,sound:true,best:{},bk:0,log:{},goal:50,cjSel:{},rd:{},ts:0};}
+var HAD_LOCAL=false;
+function load(){try{var r=localStorage.getItem(KEY);if(r){HAD_LOCAL=true;return Object.assign(fresh(),JSON.parse(r));}}catch(e){}return fresh();}
+var S=load();
+function saveLocal(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+function save(){S.ts=Date.now();saveLocal();cloudSchedule();}
+function L(){return LANGS[S.lang];}
+function dstr(d){return d.getFullYear()+"-"+(d.getMonth()+1)+"-"+d.getDate();}
+function today(){return dstr(new Date());}
+function yest(){var d=new Date();d.setDate(d.getDate()-1);return dstr(d);}
+function curStreak(){return (S.last===today()||S.last===yest())?S.streak:0;}
+function touchStreak(){if(S.last!==today()){S.streak=(S.last===yest())?S.streak+1:1;S.last=today();S.bestStreak=Math.max(S.bestStreak||0,S.streak);}}
+function logDay(k){k=k||today();if(!S.log)S.log={};return S.log[k]||(S.log[k]={x:0,q:0,o:0,s:0});}
+function dayLog(k){return (S.log&&S.log[k])||{x:0,q:0,o:0,s:0};}
+function addXP(n){var before=logDay().x;S.xp+=n;logDay().x+=n;if(before<S.goal&&before+n>=S.goal)goalHit=true;}
+function logAns(ok){var d=logDay();d.q++;if(ok)d.o++;}
+function addTime(t0){if(!t0)return;var ms=Math.min(Date.now()-t0,30*60000);if(ms>0)logDay().s+=Math.round(ms/1000);}
+function pruneLog(){var ks=Object.keys(S.log||{});if(ks.length<=400)return;var lim=Date.now()-400*864e5;ks.forEach(function(k){var p=k.split("-");if(new Date(+p[0],+p[1]-1,+p[2]).getTime()<lim)delete S.log[k];});}
+function rec(it){return S.items[it.id]||{box:0,due:0,seen:0,wrong:0};}
+function mastered(list){return list.filter(function(i){return rec(i).box>=3;}).length;}
+function dueItems(){var n=Date.now();return L().all.filter(function(i){var r=S.items[i.id];return r&&r.box>=1&&r.due<=n;}).sort(function(a,b){return S.items[a.id].due-S.items[b.id].due;});}
+function seenItems(){return L().all.filter(function(i){var r=S.items[i.id];return r&&r.seen>0;});}
+function weakList(){return seenItems().filter(function(i){return rec(i).box<=2;}).sort(function(a,b){return (rec(b).wrong||0)-(rec(a).wrong||0)||rec(a).box-rec(b).box;});}
+function missedList(){return L().all.filter(function(i){return (rec(i).wrong||0)>0;}).sort(function(a,b){return rec(b).wrong-rec(a).wrong||rec(a).box-rec(b).box;});}
+function isPh(it){return it.t.split(" ").length>=3;}
+function unlocked(idx){var us=L().units;return S.open||idx===0||!!S.done[us[idx].id]||!!S.done[us[idx-1].id];}
+function curLevel(){var lv="A0";L().units.forEach(function(u){if(S.done[u.id]&&LV.indexOf(u.lv)>LV.indexOf(lv))lv=u.lv;});return lv;}
+function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+var norm=function(s){return s.toLowerCase().replace(/[’‘]/g,"'").replace(/\s+/g," ").trim();};
+var loose=function(s){return norm(s).replace(/œ/g,"oe").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[.,!?¿¡]/g,"").replace(/\s+/g," ").trim();};
+var canSpeak=("speechSynthesis" in window);
+function speak(t,rate){if(!S.sound||!canSpeak)return;try{var u=new SpeechSynthesisUtterance(t);u.lang=L().tts;u.rate=rate||.9;speechSynthesis.cancel();speechSynthesis.speak(u);}catch(e){}}
+var goalHit=false;
+
+/* ---------- conjugation helpers ---------- */
+function tenseOf(tk){return L().tenses.find(function(t){return t[0]===tk;});}
+function cjSel(){var s=S.cjSel&&S.cjSel[S.lang];if(s&&s.length)return s;var lv=curLevel(),li=Math.max(1,LV.indexOf(lv));return L().tenses.filter(function(t){return LV.indexOf(t[3])<=li;}).map(function(t){return t[0];});}
+var VOW=/^[aeiouyhéèêâîôûœ]/i;
+function cjFull(lang,tk,p,f){
+  if(lang==="fr"){
+    var pr=["je","tu","il","nous","vous","ils"][p],s;
+    s=(p===0&&VOW.test(f))?"j'"+f:pr+" "+f;
+    if(tk==="subj")s=(p===2||p===5?"qu'":"que ")+s;
+    return s;
+  }
+  var pe=["yo","tú","él","nosotros","vosotros","ellos"][p]+" "+f;
+  return (tk==="subj"||tk==="subji"?"que ":"")+pe;
+}
+function cjPron(lang,tk,p,f){
+  var pr=PRON[lang][p];
+  if(lang==="fr"&&p===0&&VOW.test(f))pr="j'";
+  if(tk==="subj"||tk==="subji")pr=(lang==="fr"&&(p===2||p===5)?"qu'":"que ")+pr;
+  return pr;
+}
+function cjItem(vi,tk,p){
+  var lang=S.lang,v=L().conj[vi],f=v.t[tk][p],T=tenseOf(tk);
+  return {id:"cj:"+lang+":"+v.v+":"+tk+":"+p,t:cjFull(lang,tk,p,f),f:f,a:v.v+" · "+T[2],lv:T[3],cj:{vi:vi,tk:tk,p:p}};
+}
+function cjDistract(it){
+  var c=it.cj,v=L().conj[c.vi],seen={},out=[];seen[it.f]=1;
+  var pool=[];
+  v.t[c.tk].forEach(function(f){pool.push(f);});
+  L().tenses.forEach(function(t){pool.push(v.t[t[0]][c.p]);});
+  shuffle(pool).forEach(function(f){if(out.length<3&&!seen[f]){seen[f]=1;out.push({v:f,c:false});}});
+  return out;
+}
+function cjStats(){
+  var out={},pre="cj:"+S.lang+":";
+  Object.keys(S.items).forEach(function(k){if(k.indexOf(pre)!==0)return;var tk=k.split(":")[3],r=S.items[k],o=out[tk]||(out[tk]={seen:0,wrong:0,keys:0,m:0});o.seen+=r.seen||0;o.wrong+=r.wrong||0;o.keys++;if(r.box>=3)o.m++;});
+  return out;
+}
+
+/* ---------- icons ---------- */
+var P={
+  flame:'<path fill="currentColor" d="M12 2c1 4 5 6 5 11a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-4-1-6 1-10z"/>',
+  bolt:'<path fill="currentColor" d="M13 2 4 14h6l-1 8 9-12h-6z"/>',
+  heart:'<path fill="currentColor" d="M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z"/>',
+  lock:'<path fill="currentColor" d="M7 11V8a5 5 0 0 1 10 0v3h1a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-8a1 1 0 0 1 1-1zm2 0h6V8a3 3 0 0 0-6 0z"/>',
+  check:'<path fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" d="M5 12.5l4.5 4.5L19 7.5"/>',
+  spk:'<path fill="currentColor" d="M4 9v6h4l5 4V5L8 9H4z"/><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"/>',
+  mute:'<path fill="currentColor" d="M4 9v6h4l5 4V5L8 9H4z"/><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M17 9l5 6M22 9l-5 6"/>',
+  close:'<path fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" d="M6 6l12 12M18 6L6 18"/>',
+  grid:'<path fill="currentColor" d="M3 3h8v8H3zM13 3h8v8h-8zM3 13h8v8H3zM13 13h8v8h-8z"/>',
+  blank:'<path fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" d="M3 19h18M7 14l3-8 3 8M8 11.500h4"/>',
+  book:'<path fill="currentColor" d="M4 4h7a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H4zM20 4h-7a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h8z"/>',
+  table:'<path fill="none" stroke="currentColor" stroke-width="2.2" d="M3.5 4.5h17v15h-17zM3.5 9.5h17M3.5 14.5h17M10 4.5v15"/>',
+  chart:'<path fill="currentColor" d="M4 20V11h3.5v9zm6.25 0V4h3.5v16zM16.5 20v-6H20v6z"/>',
+  read:'<path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M5 5h14M5 9.5h14M5 14h9M5 18.5h6"/><circle cx="18" cy="17" r="3" fill="currentColor"/>',
+  rule:'<path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" d="M6 3.5h9l3.5 3.5v13.5H6z"/><path fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" d="M9 11h6.5M9 15h6.5"/>',
+  target:'<circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="2.2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2.2"/><circle cx="12" cy="12" r="1.3" fill="currentColor"/>',
+  trophy:'<path fill="currentColor" d="M7 3h10v2h3v3a4 4 0 0 1-4 4h-.3A5 5 0 0 1 13 14.9V18h3v3H8v-3h3v-3.1A5 5 0 0 1 8.3 12H8a4 4 0 0 1-4-4V5h3zm0 4H6v1a2 2 0 0 0 1 1.7zm10 0v2.7A2 2 0 0 0 18 8V7z"/>'
+};
+function ico(n,c){return '<svg class="i '+(c||"")+'" viewBox="0 0 24 24" aria-hidden="true">'+P[n]+'</svg>';}
+function monsterSvg(){
+  return '<svg viewBox="0 0 80 80" aria-hidden="true"><path d="M20 28l-8-16 18 10zM60 28l8-16-18 10z" fill="var(--accent-deep)"/>'
+   +'<path d="M12 54c0-22 12-36 28-36s28 14 28 36c0 9-7 14-14 14H26c-7 0-14-5-14-14z" fill="var(--warm)"/>'
+   +'<circle cx="29" cy="40" r="8" fill="#fff"/><circle cx="51" cy="40" r="8" fill="#fff"/><circle cx="31" cy="41" r="4" fill="#1A1744"/><circle cx="49" cy="41" r="4" fill="#1A1744"/>'
+   +'<path d="M26 56l5 6 5-6 4 6 4-6 5 6 5-6" fill="none" stroke="#1A1744" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/></svg>';
+}
+
+/* ---------- game logic ---------- */
+var view="home",lastView="",G=null,RES=null,LAST=null,M=null,R=null,raceTimer=null,resetArm=false;
+var WF={q:"",f:"all"},CT=null,RD=null,GF={lv:"all"},lastField=null;
+
+function pickType(it){
+  if(it.cj)return rec(it).box===0?"cmc":"ctype";
+  var b=rec(it).box;
+  if(isPh(it)){if(b===0)return "mc";if(b===1)return "fill";if(b===3&&canSpeak)return "listen";if(b>=4&&canSpeak&&Math.random()<.35)return "dict";return "build";}
+  if(b===0)return Math.random()<.5?"mc":"mcr";
+  if(b===1)return "mcr";
+  if(b===2)return canSpeak?"listen":"mcr";
+  if(b>=4&&canSpeak&&Math.random()<.5)return "dict";
+  return "type";
+}
+function pickGameType(it){
+  var a;
+  if(isPh(it)){a=["mc","fill","build"];}else{a=["mc","mcr"];if(canSpeak)a.push("listen");}
+  return a[Math.floor(Math.random()*a.length)];
+}
+function distract(it,side){
+  var ph=isPh(it),lvI=LV.indexOf(it.lv);
+  var seen={};seen[it[side]]=1;
+  var pool=shuffle(L().all.filter(function(x){return x.id!==it.id&&isPh(x)===ph;}));
+  pool.sort(function(a,b){return Math.abs(LV.indexOf(a.lv)-lvI)-Math.abs(LV.indexOf(b.lv)-lvI);});
+  var out=[];
+  for(var i=0;i<pool.length&&out.length<3;i++){var v=pool[i][side];if(!seen[v]){seen[v]=1;out.push({v:v,c:false});}}
+  return out;
+}
+function mkFill(it){
+  var tk=it.t.split(" "),c=[];
+  tk.forEach(function(w,i){var core=w.replace(/^[¿¡]+/,"").replace(/[,.?!]+$/,"");if(core.length>=3)c.push(i);});
+  if(!c.length)return null;
+  var idx=c[Math.floor(Math.random()*c.length)],w=tk[idx];
+  var lead=(w.match(/^[¿¡]+/)||[""])[0],trail=(w.match(/[,.?!]+$/)||[""])[0],core=w.slice(lead.length,w.length-trail.length);
+  var pre=tk.slice(0,idx).join(" ")+(idx?" ":"")+lead;
+  var post=trail+(idx<tk.length-1?" ":"")+tk.slice(idx+1).join(" ");
+  var seen={};seen[loose(core)]=1;var pool=[];
+  L().all.forEach(function(x){if(isPh(x))x.t.split(" ").forEach(function(y){var k=y.replace(/^[¿¡]+/,"").replace(/[,.?!]+$/,"");if(k.length>=3&&!seen[loose(k)]){seen[loose(k)]=1;pool.push(k);}});});
+  var opts=[{v:core,c:true}].concat(shuffle(pool).slice(0,3).map(function(v){return {v:v,c:false};}));
+  return {pre:pre,post:post,core:core,opts:shuffle(opts)};
+}
+function startG(cfg,steps){
+  G={cfg:cfg,queue:steps,total:steps.filter(function(s){return s.k==="q";}).length,done:0,hearts:5,ok1:0,n1:0,t0:Date.now()};
+  LAST={mode:cfg.mode,cfg:cfg};view="game";goalHit=false;initStep();
+}
+function beginSession(cfg){
+  var items=shuffle(cfg.items.slice()),steps=[];
+  for(var i=0;i<items.length;i+=4){
+    var ch=items.slice(i,i+4);
+    if(cfg.mode==="unit")ch.forEach(function(it){if(rec(it).box===0)steps.push({k:"intro",it:it});});
+    shuffle(ch.slice()).forEach(function(it){steps.push({k:"q",it:it,type:pickType(it)});});
+  }
+  if(cfg.mode==="unit"&&cfg.unit.note&&!S.done[cfg.unit.id])steps.unshift({k:"note",text:cfg.unit.note});
+  startG(cfg,steps);
+}
+function startList(mode){
+  var it=(mode==="weak"?weakList():mode==="missed"?missedList():dueItems()).slice(0,12);
+  if(!it.length){view="home";render();return;}
+  beginSession({mode:mode,items:it});
+}
+function startMonster(){
+  var pool=seenItems();if(pool.length<6)return;
+  var p=shuffle(pool.slice()),steps=[];
+  for(var i=0;i<10;i++){var it=p[i%p.length];steps.push({k:"q",it:it,type:pickGameType(it)});}
+  startG({mode:"monster"},steps);
+}
+function startFill(){
+  var p=shuffle(seenItems().filter(isPh));if(p.length<4)return;
+  startG({mode:"fill"},p.slice(0,8).map(function(it){return {k:"q",it:it,type:"fill"};}));
+}
+function startConj(vi){
+  var sel=cjSel(),cj=L().conj,now=Date.now(),cand=[];
+  var verbs=vi==null?cj.map(function(_,i){return i;}):[vi];
+  verbs.forEach(function(v){sel.forEach(function(tk){for(var p=0;p<6;p++)cand.push({v:v,tk:tk,p:p,id:"cj:"+S.lang+":"+cj[v].v+":"+tk+":"+p});});});
+  var due=cand.filter(function(c){var r=S.items[c.id];return r&&r.box>=1&&r.due<=now;}).sort(function(a,b){return S.items[a.id].due-S.items[b.id].due;});
+  var fresh_=cand.filter(function(c){return !S.items[c.id];});
+  if(vi==null){var vo={};fresh_.forEach(function(c){vo[c.v]=1;});var firstVerbs=Object.keys(vo).map(Number).sort(function(a,b){return a-b;}).slice(0,3);fresh_=fresh_.filter(function(c){return firstVerbs.indexOf(c.v)>-1;});}
+  fresh_=shuffle(fresh_);
+  var rest=shuffle(cand.filter(function(c){return S.items[c.id]&&due.indexOf(c)<0;}));
+  var pick=due.slice(0,8);
+  fresh_.concat(rest).forEach(function(c){if(pick.length<12&&pick.indexOf(c)<0)pick.push(c);});
+  var steps=shuffle(pick).map(function(c){var it=cjItem(c.v,c.tk,c.p);return {k:"q",it:it,type:pickType(it)};});
+  startG({mode:"conj",vi:vi},steps);
+}
+function initStep(){
+  var st=G.queue[0];G.cur=st;G.sel=null;G.built=[];G.reveal=false;G.res=null;
+  G.phase=(st.k==="intro"||st.k==="note")?"intro":"ask";
+  if(st.k==="q"){
+    var it=st.it;
+    if(st.type==="fill"){st.fill=mkFill(it);if(!st.fill)st.type="build";else st.opts=st.fill.opts;}
+    if(st.type==="mc"){st.opts=shuffle([{v:it.a,c:true}].concat(distract(it,"a")));}
+    else if(st.type==="mcr"||st.type==="listen"){st.opts=shuffle([{v:it.t,c:true}].concat(distract(it,"t")));}
+    else if(st.type==="cmc"){st.opts=shuffle([{v:it.f,c:true}].concat(cjDistract(it)));}
+    else if(st.type==="build"){
+      var mk=function(){return shuffle(it.t.split(" ").map(function(w,i){return {w:w,i:i};}));};
+      st.bank=mk();
+      if(st.bank.length>1&&st.bank.every(function(b,i){return b.i===i;}))st.bank=mk();
+    }
+  }
+  render();window.scrollTo(0,0);
+  if(st.k==="intro"||(st.k==="q"&&(st.type==="listen"||st.type==="dict")))setTimeout(function(){speak(st.it.t);},120);
+}
+function grade(it,ok){
+  var r=S.items[it.id]||(S.items[it.id]={box:0,due:0,seen:0,wrong:0});
+  r.seen=(r.seen||0)+1;
+  var days=[0,0.007,1,3,7,21];
+  if(ok){r.box=Math.min(5,r.box+1);r.due=Date.now()+days[r.box]*864e5;}
+  else{r.box=Math.max(0,r.box-2);r.due=Date.now();r.wrong=(r.wrong||0)+1;}
+  logAns(ok);
+}
+function check(){
+  var st=G.cur,it=st.it,ok=false,note="";
+  if(st.type==="type"||st.type==="dict"){
+    var v=document.getElementById("ans").value;
+    ok=loose(v)===loose(it.t);
+    if(ok&&norm(v)!==norm(it.t))note="صح، بس الشكل الصحيح: "+it.t;
+  }else if(st.type==="ctype"){
+    var w=norm(document.getElementById("ans").value);
+    if(w===norm(it.f)||w===norm(it.t))ok=true;
+    else if(loose(w)===loose(it.f)||loose(w)===loose(it.t)){ok=true;note="صح، بس خلي بالك من العلامات: "+it.f;}
+  }else if(st.type==="build"){
+    ok=loose(G.built.map(function(i){return st.bank[i].w;}).join(" "))===loose(it.t);
+  }else ok=st.opts[G.sel].c;
+  if(!st.retry){grade(it,ok);G.n1++;if(ok)G.ok1++;}
+  if(ok)G.done++;
+  else{G.hearts--;G.queue.push({k:"q",it:it,type:st.type==="type"?"mcr":st.type==="dict"?"listen":st.type==="ctype"?"cmc":st.type,retry:true});}
+  G.phase="fb";G.res={ok:ok,note:note};
+  save();render();
+  if(st.type!=="listen")speak(it.t);
+}
+function next(){
+  if(G.phase==="intro"){G.queue.shift();initStep();return;}
+  if(G.hearts<=0){addXP(G.ok1*5);addTime(G.t0);save();view="fail";render();return;}
+  G.queue.shift();
+  if(!G.queue.length)finish();else initStep();
+}
+function finish(){
+  var m=G.cfg.mode,acc=G.n1?Math.round(100*G.ok1/G.n1):100;
+  var gained=G.ok1*10+10+(G.ok1===G.n1?20:0)+(m==="monster"?20:0);
+  addXP(gained);touchStreak();addTime(G.t0);pruneLog();
+  if(m==="unit")S.done[G.cfg.unit.id]=Math.max(S.done[G.cfg.unit.id]||1,acc);
+  save();
+  var T={unit:"خلّصت الوحدة!",review:"خلّصت المراجعة!",weak:"خلّصت التدريب!",missed:"خلّصت تدريب الغلطات!",monster:"هزمت الوحش!",fill:"خلّصت ملء الفراغ!",conj:"خلّصت تدريب التصريف!"};
+  RES={mode:m,title:T[m],big:acc+"%",label:"دقة من أول محاولة",gained:gained};
+  view="result";render();
+}
+function again(){
+  var m=LAST&&LAST.mode;
+  if(m==="unit")beginSession(LAST.cfg);
+  else if(m==="review"||m==="weak"||m==="missed")startList(m);
+  else if(m==="monster")startMonster();
+  else if(m==="fill")startFill();
+  else if(m==="race")startRace();
+  else if(m==="match")startMatch();
+  else if(m==="conj")startConj(LAST.cfg.vi);
+  else{view="home";render();}
+}
+
+/* race */
+function stopRace(){if(raceTimer){clearInterval(raceTimer);raceTimer=null;}}
+function raceQ(){
+  var it;do{it=R.pool[Math.floor(Math.random()*R.pool.length)];}while(it===R.last&&R.pool.length>1);
+  R.last=it;var showT=Math.random()<.5,side=showT?"a":"t";
+  R.q={it:it,showT:showT,opts:shuffle([{v:it[side],c:true}].concat(distract(it,side)))};R.sel=null;R.lock=false;
+}
+function startRace(){
+  var pool=seenItems(),w=pool.filter(function(i){return !isPh(i);});if(w.length<6)w=pool;if(w.length<6)return;
+  R={pool:w,score:0,wrong:0,pen:0,t0:Date.now(),last:null};LAST={mode:"race"};goalHit=false;
+  raceQ();view="race";render();stopRace();raceTimer=setInterval(raceTick,200);
+}
+function raceTick(){
+  if(!R||view!=="race"){stopRace();return;}
+  var left=60-(Date.now()-R.t0)/1000-R.pen;
+  if(left<=0){endRace();return;}
+  var e=document.getElementById("rtime");if(e)e.textContent=Math.ceil(left);
+  var b=document.getElementById("rbar");if(b)b.style.width=Math.min(100,100*left/60)+"%";
+}
+function endRace(){
+  stopRace();
+  var b=S.best[S.lang]||(S.best[S.lang]={}),prev=b.race||0,rec2=R.score>prev,gained=R.score*3;
+  if(rec2)b.race=R.score;
+  addXP(gained);touchStreak();addTime(R.t0);save();
+  RES={mode:"race",title:rec2&&R.score>0?"رقم قياسي جديد!":"خلص الوقت!",big:String(R.score),label:"إجابة صح"+(prev&&!rec2?" · أعلى رقم عندك "+prev:""),gained:gained};
+  view="result";render();
+}
+/* match */
+function startMatch(){
+  var pool=seenItems(),w=pool.filter(function(i){return !isPh(i);});if(w.length<6)w=pool;if(w.length<6)return;
+  var pick=shuffle(w.slice()).slice(0,6);
+  M={pairs:pick,L:shuffle(pick.slice()),R:shuffle(pick.slice()),sel:null,done:{},wrong:0,t0:Date.now(),bad:null,lock:false};
+  LAST={mode:"match"};goalHit=false;view="match";render();
+}
+function matchTap(s,id){
+  if(M.lock||M.done[id])return;
+  if(!M.sel||M.sel.s===s){M.sel={s:s,id:id};render();return;}
+  if(M.sel.id===id){
+    M.done[id]=1;M.sel=null;logAns(true);
+    speak(M.pairs.find(function(p){return p.id===id;}).t);
+    if(Object.keys(M.done).length===M.pairs.length){endMatch();return;}
+    render();
+  }else{
+    M.wrong++;logAns(false);M.bad=[M.sel,{s:s,id:id}];M.sel=null;M.lock=true;render();
+    setTimeout(function(){if(!M)return;M.bad=null;M.lock=false;if(view==="match")render();},550);
+  }
+}
+function endMatch(){
+  var secs=Math.round((Date.now()-M.t0)/1000),gained=Math.max(10,40-M.wrong*5);
+  addXP(gained);touchStreak();addTime(M.t0);save();
+  RES={mode:"match",title:"خلّصت المطابقة!",big:secs+"ث",label:"الوقت · "+(M.wrong?M.wrong+" غلطات":"من غير غلطات"),gained:gained};
+  view="result";render();
+}
+/* conjugation table quiz */
+function openTable(vi,tk){CT={vi:vi,tk:tk||cjSel()[0]||"pres",mode:"learn",vals:["","","","","",""],res:null,t0:Date.now()};view="ctable";render();}
+function checkTable(){
+  var v=L().conj[CT.vi],forms=v.t[CT.tk],ok=0;
+  CT.vals=forms.map(function(_,i){var e=document.getElementById("ct"+i);return e?e.value:"";});
+  CT.res=forms.map(function(f,i){
+    var w=norm(CT.vals[i]),it=cjItem(CT.vi,CT.tk,i);
+    var good=w===norm(f)||w===norm(it.t);
+    var near=!good&&(loose(w)===loose(f)||loose(w)===loose(it.t));
+    grade(it,good||near);if(good||near)ok++;
+    return good?2:near?1:0;
+  });
+  var gained=ok*3+(ok===6?10:0);addXP(gained);touchStreak();addTime(CT.t0);CT.t0=Date.now();CT.gained=gained;CT.ok=ok;
+  save();render();
+}
+/* reading */
+function openRead(i){RD={i:i,ans:[],done:false,hide:false,t0:Date.now()};view="rtext";render();}
+function checkRead(){
+  var t=L().read[RD.i],ok=0;
+  t.qs.forEach(function(q,qi){var g=RD.ans[qi]===q[2];if(g)ok++;logAns(g);});
+  RD.done=true;RD.ok=ok;var key=S.lang+"-"+RD.i;S.rd[key]=Math.max(S.rd[key]||0,ok);
+  var gained=ok*10+(ok===t.qs.length?10:0);RD.gained=gained;addXP(gained);touchStreak();addTime(RD.t0);save();render();
+}
+
+/* ---------- views ---------- */
+function gameTile(act,icon,title,desc,ok,extra){
+  return '<button class="unit gt" data-act="'+act+'"'+(ok?'':' disabled')+'><div class="row"><strong>'+title+'</strong>'+icon+'</div><span>'+desc+'</span><span class="go">'+(ok?(extra||'العب'):'خلّص وحدة الأول')+'</span></button>';
+}
+function back(title,act){return '<div class="gtop"><button class="x" data-act="'+(act||"home")+'" aria-label="رجوع">'+ico("close")+'</button><h2>'+title+'</h2></div>';}
+function goalBar(){
+  var x=logDay().x,g=S.goal||50,p=Math.min(100,Math.round(100*x/g)),done=x>=g;
+  return '<div class="goal'+(done?' hit':'')+'">'+ico(done?"trophy":"target")+'<div class="gtxt"><b>'+(done?'هدف النهارده اتحقق':'هدف النهارده')+'</b><span class="gbar"><i style="width:'+p+'%"></i></span></div><span class="gnum">'+x+' / '+g+'</span></div>';
+}
+function homeView(){
+  var us=L().units,due=dueItems().length,m=mastered(L().all);
+  var seen=seenItems(),nW=seen.length,nP=seen.filter(isPh).length,best=(S.best[S.lang]||{}).race;
+  var h='<div class="wrap">';
+  h+='<div class="top"><div class="brand"><h1>ملعب اللغات</h1><p>من الصفر لحد B2، بجولات قصيرة كل يوم</p></div>';
+  h+='<div class="seg" role="group" aria-label="اللغة">';
+  Object.keys(LANGS).forEach(function(k){h+='<button data-act="lang" data-v="'+k+'" aria-pressed="'+(S.lang===k)+'">'+LANGS[k].name+'</button>';});
+  h+='</div></div>';
+  h+='<div class="stats">'
+    +'<div class="stat">'+ico("flame","c-flame")+'<div><b>'+curStreak()+'</b><small>يوم متواصل</small></div></div>'
+    +'<div class="stat">'+ico("bolt","c-xp")+'<div><b>'+S.xp+'</b><small>نقطة خبرة</small></div></div>'
+    +'<div class="stat">'+ico("check","c-ok")+'<div><b>'+m+'</b><small>كلمة متقنة</small></div></div></div>';
+  h+=goalBar();
+  if(due>0){
+    h+='<div class="review"><div><h2>عندك '+due+' كلمة وقت مراجعتها</h2><p>مراجعة قصيرة بتثبّت الكلمات في دماغك</p></div><button class="btn light" data-act="review">راجع دلوقتي</button></div>';
+  }else{
+    h+='<div class="review idle"><div><h2>مفيش مراجعة دلوقتي</h2><p>خلّص وحدة جديدة وكلماتها هتظهر هنا لما يجي وقتها</p></div></div>';
+  }
+  var cs=cjStats(),cjDue=0,now=Date.now(),pre="cj:"+S.lang+":";
+  Object.keys(S.items).forEach(function(k){if(k.indexOf(pre)===0){var r=S.items[k];if(r.box>=1&&r.due<=now)cjDue++;}});
+  var rdDone=L().read.filter(function(_,i){return S.rd[S.lang+"-"+i]!=null;}).length;
+  h+='<h2 class="sec">تدريب أعمق</h2><div class="units">'
+    +gameTile("conj",ico("table"),"التصريف",'جداول '+L().conj.length+' فعل في '+L().tenses.length+' أزمنة',true,cjDue?'راجع '+cjDue+' تصريف':'ابدأ')
+    +gameTile("read",ico("read"),"قراءة واستماع",'نصوص قصيرة وأسئلة فهم · خلّصت '+rdDone+'/'+L().read.length,true,'افتح')
+    +gameTile("grammar",ico("rule"),"القواعد","كل ملاحظات القواعد في مكان واحد",true,'افتح')
+    +gameTile("stats",ico("chart"),"الإحصائيات","تقدّمك الأسبوعي وأكتر غلطاتك",true,'افتح')
+    +'</div>';
+  h+='<h2 class="sec">ألعاب سريعة</h2><div class="units">'
+    +gameTile("monster",'<span class="mon" style="display:flex">'+monsterSvg().replace('<svg ','<svg style="width:34px;height:34px" ')+'</span>',"الوحش والكلمات","اضرب الوحش بالإجابات الصح",nW>=6)
+    +gameTile("race",ico("bolt"),"سباق الوقت","60 ثانية، والغلط بياكل 3 ثواني",nW>=6,best?'أعلى رقم: '+best:'')
+    +gameTile("match",ico("grid"),"مطابقة","وصّل الكلمة بمعناها",nW>=6)
+    +gameTile("fill",ico("blank"),"ملء الفراغ","كمّل الجملة بالكلمة الناقصة",nP>=4)
+    +gameTile("words",ico("book"),"كلماتي",'كل الكلمات ('+L().all.length+') وحالة كل واحدة',true,'افتح')
+    +'</div>';
+  LV.forEach(function(lv){
+    var lus=us.filter(function(u){return u.lv===lv;});
+    var all=[].concat.apply([],lus.map(function(u){return u.items;}));
+    var mm=mastered(all),dn=lus.filter(function(u){return S.done[u.id];}).length;
+    h+='<section class="level"><div class="lv-head"><span class="lv-code">'+lv+'</span><span class="lv-name">'+LV_AR[lv]+' · '+dn+'/'+lus.length+' وحدة</span>'
+      +'<span class="lv-prog"><span class="mini"><i style="width:'+Math.round(100*mm/all.length)+'%"></i></span>'+mm+'/'+all.length+'</span></div><div class="units">';
+    lus.forEach(function(u){
+      var idx=us.indexOf(u),open=unlocked(idx),d=S.done[u.id];
+      var phr=u.items.filter(isPh).length>u.items.length/2;
+      var um=mastered(u.items);
+      h+='<button class="unit'+(d?' done':'')+(open?'':' locked')+'" data-act="unit" data-u="'+u.id+'"'+(open?'':' disabled')+'>'
+        +'<div class="row"><strong>'+esc(u.title)+'</strong>'+(open?(d?ico("check","c-ok"):''):ico("lock"))+'</div>'
+        +'<span>'+u.items.length+(phr?' جمل':' كلمات')+' · متقن '+um+'/'+u.items.length+'</span>'
+        +(open?'<span class="go">'+(d?'العب تاني · دقة '+d+'%':'ابدأ')+'</span>':'<span>خلّص اللي قبلها الأول</span>')
+        +'</button>';
+    });
+    h+='</div></section>';
+  });
+  var bkTxt=CL.on?'تقدّمك متزامن مع حسابك وبيظهر على أي جهاز':(S.bk?('آخر نسخة احتياطية: '+(Math.floor((Date.now()-S.bk)/864e5)||'النهارده')+(Math.floor((Date.now()-S.bk)/864e5)?' يوم':'')):'تقدّمك محفوظ في المتصفح ده بس');
+  h+='<div class="foot"><button class="linkbtn" data-act="backup">نسخة احتياطية ونقل التقدّم</button><small>'+bkTxt+'</small>'
+    +'<button class="linkbtn" data-act="unlock">'+(S.open?'رجّع القفل على الوحدات':'عارف المستوى؟ افتح كل الوحدات')+'</button></div></div>';
+  return h;
+}
+function opts(st,ltr,two){
+  var h='<div class="opts'+(two?' two':'')+'">';
+  st.opts.forEach(function(o,i){
+    var c="opt"+(ltr?" ltr":"");
+    if(G.phase==="fb"){if(o.c)c+=" right";else if(G.sel===i)c+=" wrong";}
+    else if(G.sel===i)c+=" sel";
+    h+='<button class="'+c+'" data-act="opt" data-i="'+i+'">'+esc(o.v)+'</button>';
+  });
+  return h+'</div>';
+}
+function accBar(){return '<div class="accs">'+L().acc.map(function(c){return '<button type="button" data-act="acc" data-c="'+c+'">'+c+'</button>';}).join("")+'</div>';}
+function ansField(){return '<input id="ans" class="field" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"'+(G.phase==="fb"?' disabled':'')+'>';}
+function cjCard(it){
+  var c=it.cj,v=L().conj[c.vi],T=tenseOf(c.tk);
+  return '<div class="wordcard cjq"><div class="cjmeta"><span class="tense">'+T[1]+' · <span class="ltr">'+T[2]+'</span></span><span class="ltr inf">'+esc(v.v)+'</span><span class="mean">'+esc(v.a)+'</span></div>'
+    +'<div class="word sm"><span class="pr">'+esc(cjPron(S.lang,c.tk,c.p,it.f))+'</span> '+(G.phase==="fb"?'<b>'+esc(it.f)+'</b>':'<span class="blank">&nbsp;</span>')+'</div></div>';
+}
+function gameView(){
+  var st=G.cur,it=st.it,pct=Math.round(100*G.done/Math.max(1,G.total)),mon=G.cfg.mode==="monster";
+  var h='<div class="wrap"><div class="gtop"><button class="x" data-act="quit" aria-label="خروج">'+ico("close")+'</button>'
+    +(mon?'<div style="flex:1"></div>':'<div class="bar"><i style="width:'+pct+'%"></i></div>')
+    +'<button class="snd" data-act="snd" aria-label="الصوت">'+ico(S.sound?"spk":"mute")+'</button>'
+    +'<div class="hearts">'+ico("heart")+'<span>'+G.hearts+'</span></div></div>';
+  if(mon){
+    var hp=Math.max(0,G.total-G.done),cls=G.phase==="fb"&&G.res?(G.res.ok?" hit":" bite"):"";
+    h+='<div class="monrow"><div class="mon'+cls+'">'+monsterSvg()+'</div><div class="hp"><i style="width:'+Math.round(100*hp/G.total)+'%"></i></div></div>';
+  }
+  h+='<div class="stage">';
+  var bottom="";
+  if(st.k==="note"){
+    h+='<span class="tag">نصيحة قبل ما نبدأ</span><div class="note">'+esc(st.text)+'</div>';
+    bottom='<button class="btn" data-act="next">تمام</button>';
+  }else if(st.k==="intro"){
+    h+='<span class="tag">'+(isPh(it)?'جملة جديدة':'كلمة جديدة')+'</span>'
+      +'<div class="wordcard big"><div class="word">'+esc(it.t)+'</div><button class="spk" data-act="speak" data-t="'+esc(it.t)+'" aria-label="استمع">'+ico("spk")+'</button></div>'
+      +'<p class="meaning">'+esc(it.a)+'</p>';
+    bottom='<button class="btn" data-act="next">فهمت</button>';
+  }else{
+    var ph=isPh(it);
+    if(st.type==="mc"){
+      h+='<h2 class="prompt">إيه معنى '+(ph?'الجملة':'الكلمة')+' دي؟</h2><div class="wordcard"><div class="word">'+esc(it.t)+'</div><button class="spk" data-act="speak" data-t="'+esc(it.t)+'" aria-label="استمع">'+ico("spk")+'</button></div>'+opts(st,false);
+    }else if(st.type==="mcr"){
+      h+='<h2 class="prompt">إزاي تقول بالـ'+L().name+':</h2><div class="wordcard"><div class="word ar">'+esc(it.a)+'</div></div>'+opts(st,true);
+    }else if(st.type==="fill"){
+      var f=st.fill,mid=G.phase==="fb"?'<b>'+esc(f.core)+'</b>':'<span class="blank">&nbsp;</span>';
+      h+='<h2 class="prompt">كمّل الجملة:</h2><div class="wordcard" style="flex-direction:column"><div class="word sm">'+esc(f.pre)+mid+esc(f.post)+'</div><div style="color:var(--muted)">'+esc(it.a)+'</div></div>'+opts(st,true);
+    }else if(st.type==="listen"){
+      h+='<h2 class="prompt">اسمع واختار اللي سمعته</h2><div class="wordcard"><button class="spk" style="width:72px;height:72px" data-act="speak" data-t="'+esc(it.t)+'" aria-label="استمع">'+ico("spk")+'</button></div>'
+        +(G.reveal?'<p class="meaning ltr" style="font-size:1.1rem">'+esc(it.t)+'</p>':'<button class="linkbtn reveal" data-act="reveal">مش سامع؟ اعرض النص</button>')+opts(st,true);
+    }else if(st.type==="dict"){
+      h+='<h2 class="prompt">اسمع واكتب اللي سمعته</h2><div class="wordcard"><button class="spk" style="width:72px;height:72px" data-act="speak" data-t="'+esc(it.t)+'" aria-label="استمع">'+ico("spk")+'</button><button class="spk slow" data-act="speakslow" data-t="'+esc(it.t)+'" aria-label="استمع ببطء">0.6×</button></div>'
+        +(G.reveal?'<p class="meaning" style="font-size:1.1rem">'+esc(it.a)+'</p>':'<button class="linkbtn reveal" data-act="reveal">محتاج مساعدة؟ اعرض المعنى</button>')
+        +ansField()+accBar();
+    }else if(st.type==="type"){
+      h+='<h2 class="prompt">اكتب بالـ'+L().name+':</h2><div class="wordcard"><div class="word ar">'+esc(it.a)+'</div></div>'+ansField()+accBar();
+    }else if(st.type==="cmc"){
+      h+='<h2 class="prompt">اختار التصريف الصح</h2>'+cjCard(it)+opts(st,true,true);
+    }else if(st.type==="ctype"){
+      h+='<h2 class="prompt">اكتب التصريف</h2>'+cjCard(it)+ansField()+accBar();
+    }else if(st.type==="build"){
+      h+='<h2 class="prompt">رتّب الجملة:</h2><div class="wordcard"><div class="word ar" style="font-size:1.5rem">'+esc(it.a)+'</div></div>'
+        +'<div class="slots">'+G.built.map(function(bi,pos){return '<button class="tok" data-act="unbuild" data-p="'+pos+'">'+esc(st.bank[bi].w)+'</button>';}).join("")+'</div>'
+        +'<div class="bank">'+st.bank.map(function(b,i){return '<button class="tok'+(G.built.indexOf(i)>-1?' used':'')+'" data-act="build" data-i="'+i+'">'+esc(b.w)+'</button>';}).join("")+'</div>';
+    }
+    if(G.phase==="ask"){
+      var typed=st.type==="type"||st.type==="dict"||st.type==="ctype";
+      var ready=(st.type==="build")?G.built.length>0:typed?false:G.sel!==null;
+      bottom='<div class="fbbar"><button class="btn" id="chk" data-act="check"'+(ready?'':' disabled')+'>تحقق</button></div>';
+    }else{
+      var r=G.res,praise=["برافو!","ممتاز!","صح كده!","تمام جداً!"][G.done%4];
+      bottom='<div class="fbbar '+(r.ok?'ok':'no')+'"><h3>'+(r.ok?praise:'مش دي')+'</h3>'
+        +'<p>'+(r.ok?(r.note?esc(r.note)+'<br>':''):'الإجابة الصح: <b class="ltr">'+esc(it.t)+'</b><br>')+esc(it.a)+'</p>'
+        +'<button class="btn '+(r.ok?'good':'bad')+'" data-act="next">'+(G.hearts<=0&&!r.ok?'كمّل':'التالي')+'</button></div>';
+    }
+  }
+  h+='</div>'+(bottom.indexOf("fbbar")>-1?bottom:'<div class="fbbar">'+bottom+'</div>')+'</div>';
+  return h;
+}
+function raceView(){
+  var q=R.q,it=q.it,left=Math.max(0,60-(Date.now()-R.t0)/1000-R.pen);
+  var h='<div class="wrap"><div class="gtop"><button class="x" data-act="quit" aria-label="خروج">'+ico("close")+'</button>'
+    +'<div class="bar"><i id="rbar" style="width:'+Math.min(100,100*left/60)+'%"></i></div><b class="rtime" id="rtime">'+Math.ceil(left)+'</b><span class="score">'+R.score+'</span></div>'
+    +'<div class="stage" style="min-height:50vh"><div class="wordcard">'+(q.showT?'<div class="word">'+esc(it.t)+'</div>':'<div class="word ar">'+esc(it.a)+'</div>')+'</div><div class="opts">';
+  q.opts.forEach(function(o,i){
+    var c="opt"+(q.showT?"":" ltr");
+    if(R.lock){if(o.c)c+=" right";else if(R.sel===i)c+=" wrong";}
+    h+='<button class="'+c+'" data-act="ropt" data-i="'+i+'">'+esc(o.v)+'</button>';
+  });
+  return h+'</div><p class="hint">كل غلطة بتخصم 3 ثواني</p></div></div>';
+}
+function matchView(){
+  var h='<div class="wrap"><div class="gtop"><button class="x" data-act="quit" aria-label="خروج">'+ico("close")+'</button><h2>وصّل الكلمة بمعناها</h2></div><div class="stage" style="min-height:50vh"><div class="mgrid">';
+  ["L","R"].forEach(function(s){
+    h+='<div class="mcol">';
+    M[s].forEach(function(it){
+      var c="mcard"+(s==="R"?" ar":"");
+      if(M.done[it.id])c+=" ok";
+      else if(M.sel&&M.sel.s===s&&M.sel.id===it.id)c+=" sel";
+      else if(M.bad&&M.bad.some(function(b){return b.s===s&&b.id===it.id;}))c+=" bad";
+      h+='<button class="'+c+'" data-act="mt" data-s="'+s+'" data-id="'+it.id+'">'+esc(s==="L"?it.t:it.a)+'</button>';
+    });
+    h+='</div>';
+  });
+  return h+'</div><p class="hint">اختار كلمة من كل ناحية. الغلط بينقص نقاطك.</p></div></div>';
+}
+function wlistHTML(){
+  var q=loose(WF.q),qa=WF.q.trim(),f=WF.f;
+  var list=L().all.filter(function(it){
+    var r=S.items[it.id],seen=r&&r.seen>0,box=r?r.box:0;
+    if(f==="mastered"&&!(seen&&box>=3))return false;
+    if(f==="learning"&&!(seen&&box<3))return false;
+    if(f==="weak"&&!(seen&&box<=2&&(r.wrong||0)>0))return false;
+    if(f==="new"&&seen)return false;
+    if(qa&&loose(it.t).indexOf(q)<0&&it.a.indexOf(qa)<0)return false;
+    return true;
+  });
+  if(!list.length)return '<p class="empty">مفيش كلمات هنا دلوقتي</p>';
+  return '<div class="wl">'+list.slice(0,300).map(function(it){
+    var b=rec(it).box,d="";for(var i=1;i<=5;i++)d+='<i'+(i<=b?' class="on"':'')+'></i>';
+    return '<div class="wrow"><div class="txt"><div class="t">'+esc(it.t)+'</div><div class="a">'+esc(it.a)+'</div></div><span class="lvb">'+it.lv+'</span><div class="dots" title="درجة الإتقان">'+d+'</div>'
+      +'<button class="spk" data-act="speak" data-t="'+esc(it.t)+'" aria-label="استمع">'+ico("spk")+'</button></div>';
+  }).join("")+'</div>'+(list.length>300?'<p class="empty">بيظهر أول 300. استخدم البحث للباقي.</p>':'');
+}
+function wordsView(){
+  var F=[["all","الكل"],["mastered","متقنة"],["learning","بتتعلم"],["weak","ضعيفة"],["new","لسه جديدة"]],weak=weakList().length;
+  var h='<div class="wrap">'+back('كلماتي · '+L().name)
+    +'<div style="display:grid;gap:12px;margin-top:16px"><input id="wq" class="field" style="font-size:1.05rem;padding:10px 14px" type="search" placeholder="ابحث بالعربي أو باللغة" value="'+esc(WF.q)+'" autocomplete="off">'
+    +'<div class="chips">'+F.map(function(x){return '<button class="chip" data-act="wf" data-f="'+x[0]+'" aria-pressed="'+(WF.f===x[0])+'">'+x[1]+'</button>';}).join("")+'</div>'
+    +'<button class="btn" data-act="weakgo"'+(weak?'':' disabled')+'>'+(weak?'تدرّب على الضعيف ('+Math.min(12,weak)+' كلمة)':'مفيش كلمات ضعيفة دلوقتي')+'</button>'
+    +'<div id="wlist">'+wlistHTML()+'</div></div></div>';
+  return h;
+}
+
+/* conjugation hub */
+function conjView(){
+  var sel=cjSel(),cs=cjStats();
+  var h='<div class="wrap">'+back('التصريف · '+L().name)
+    +'<p class="lead">اختار الأزمنة اللي عايز تتدرب عليها. التدريب السريع بيجيب لك التصريفات اللي وقت مراجعتها جه، وبعدين أفعال جديدة بالترتيب من الأهم.</p>'
+    +'<h3 class="sub">الأزمنة</h3><div class="chips tenses">'
+    +L().tenses.map(function(t){var on=sel.indexOf(t[0])>-1,st=cs[t[0]];return '<button class="chip" data-act="cjt" data-t="'+t[0]+'" aria-pressed="'+on+'"><span class="lvtag">'+t[3]+'</span> '+t[1]+' <span class="ltr dim">'+t[2]+'</span>'+(st&&st.m?' · '+st.m:'')+'</button>';}).join("")
+    +'</div><div style="height:14px"></div><button class="btn" data-act="cjgo"'+(sel.length?'':' disabled')+'>تدريب سريع · 12 سؤال</button>'
+    +'<h3 class="sub">الأفعال</h3><p class="hint" style="text-align:start">اضغط على أي فعل تشوف جدوله وتختبر نفسك فيه.</p><div class="verbs">';
+  L().conj.forEach(function(v,i){
+    var pre="cj:"+S.lang+":"+v.v+":",n=0,mm=0;
+    Object.keys(S.items).forEach(function(k){if(k.indexOf(pre)===0){n++;if(S.items[k].box>=3)mm++;}});
+    h+='<button class="vb" data-act="vtab" data-i="'+i+'"><b class="ltr">'+esc(v.v)+'</b><span>'+esc(v.a)+'</span>'+(n?'<i class="vbar"><i style="width:'+Math.round(100*mm/48)+'%"></i></i>':'')+'</button>';
+  });
+  return h+'</div></div>';
+}
+function ctableView(){
+  var v=L().conj[CT.vi],T=tenseOf(CT.tk),forms=v.t[CT.tk];
+  var h='<div class="wrap">'+back('<span class="ltr">'+esc(v.v)+'</span> · '+esc(v.a),"conj")
+    +'<div class="chips tenses" style="margin-top:14px">'+L().tenses.map(function(t){return '<button class="chip" data-act="ctt" data-t="'+t[0]+'" aria-pressed="'+(t[0]===CT.tk)+'">'+t[1]+'</button>';}).join("")+'</div>'
+    +'<div class="tip"><b>'+T[1]+' · <span class="ltr">'+T[2]+'</span> <span class="lvtag">'+T[3]+'</span></b><p>'+esc(T[4])+'</p></div>';
+  if(CT.mode==="learn"){
+    h+='<div class="ctab">'+forms.map(function(f,i){var full=cjFull(S.lang,CT.tk,i,f);
+      return '<div class="crow"><span class="cp ltr">'+esc(cjPron(S.lang,CT.tk,i,f))+'</span><b class="cf ltr">'+esc(f)+'</b><button class="spk" data-act="speak" data-t="'+esc(full)+'" aria-label="استمع">'+ico("spk")+'</button></div>';}).join("")+'</div>'
+      +'<div class="acts" style="margin-top:16px"><button class="btn" data-act="ctquiz">اختبر نفسك في الجدول ده</button><button class="btn ghost" data-act="cjverb">درّب الفعل ده في الأزمنة المختارة</button></div>';
+  }else{
+    h+='<div class="ctab">'+forms.map(function(f,i){
+      var r=CT.res?CT.res[i]:null,cls=r==null?"":r===2?" ok":r===1?" near":" no";
+      return '<div class="crow'+cls+'"><label class="cp ltr" for="ct'+i+'">'+esc(PRON[S.lang][i])+'</label><div class="cin"><input id="ct'+i+'" class="field sm" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" value="'+esc(CT.vals[i])+'"'+(CT.res?' disabled':'')+'>'
+        +(r!=null&&r<2?'<span class="corr ltr">'+esc(f)+'</span>':'')+'</div></div>';}).join("")+'</div>';
+    if(!CT.res){h+=accBar()+'<div class="fbbar"><button class="btn" data-act="ctcheck">تحقق</button></div>';}
+    else{h+='<div class="fbbar '+(CT.ok===6?'ok':'no')+'"><h3>'+CT.ok+' من 6 صح</h3><p>+'+CT.gained+' نقطة خبرة'+(CT.res.indexOf(1)>-1?' · الأصفر صح بس ناقصه علامات':'')+'</p><div class="acts two"><button class="btn" data-act="ctquiz">جرّب تاني</button><button class="btn ghost" data-act="ctlearn">اعرض الجدول</button></div></div>';}
+  }
+  return h+'</div>';
+}
+
+/* reading */
+function readView(){
+  var h='<div class="wrap">'+back('قراءة واستماع · '+L().name)+'<p class="lead">كل نص فيه كلمات مساعدة وتلات أسئلة فهم. تقدر تسمعه الأول من غير ما تشوف الكلام كتدريب استماع.</p>';
+  LV.forEach(function(lv){
+    var ts=L().read.map(function(t,i){return {t:t,i:i};}).filter(function(x){return x.t.lv===lv;});
+    if(!ts.length)return;
+    h+='<div class="lv-head" style="margin-top:22px"><span class="lv-code" style="font-size:1.5rem">'+lv+'</span><span class="lv-name">'+LV_AR[lv]+'</span></div><div class="units">';
+    ts.forEach(function(x){var sc=S.rd[S.lang+"-"+x.i];
+      h+='<button class="unit'+(sc===x.t.qs.length?' done':'')+'" data-act="rtext" data-i="'+x.i+'"><div class="row"><strong>'+esc(x.t.title)+'</strong>'+(sc===x.t.qs.length?ico("check","c-ok"):'')+'</div><span>'+x.t.text.split(/\s+/).length+' كلمة · '+x.t.qs.length+' أسئلة</span><span class="go">'+(sc!=null?'نتيجتك '+sc+'/'+x.t.qs.length:'اقرا')+'</span></button>';});
+    h+='</div>';
+  });
+  return h+'</div>';
+}
+function rtextView(){
+  var t=L().read[RD.i];
+  var h='<div class="wrap">'+back(esc(t.title)+' <span class="lvtag">'+t.lv+'</span>',"read")
+    +'<div class="ractions"><button class="btn ghost sm" data-act="speak" data-t="'+esc(t.text)+'">'+ico("spk")+' اسمع النص</button><button class="btn ghost sm" data-act="speakslow" data-t="'+esc(t.text)+'">ببطء</button><button class="btn ghost sm" data-act="rhide">'+(RD.hide?'اعرض النص':'خبّي النص (استماع)')+'</button></div>'
+    +(RD.hide?'<div class="rtext hidden">النص مخفي. اسمعه وجاوب الأسئلة.</div>':'<div class="rtext ltr" lang="'+S.lang+'">'+esc(t.text)+'</div>')
+    +'<div class="gloss">'+t.gl.map(function(g){var p=g.split("|");return '<span><b class="ltr">'+esc(p[0])+'</b> '+esc(p[1])+'</span>';}).join("")+'</div>';
+  t.qs.forEach(function(q,qi){
+    h+='<div class="rq"><p>'+(qi+1)+'. '+esc(q[0])+'</p><div class="opts">';
+    q[1].forEach(function(o,oi){var c="opt";
+      if(RD.done){if(oi===q[2])c+=" right";else if(RD.ans[qi]===oi)c+=" wrong";}else if(RD.ans[qi]===oi)c+=" sel";
+      h+='<button class="'+c+'" data-act="rans" data-q="'+qi+'" data-o="'+oi+'"'+(RD.done?' disabled':'')+'>'+esc(o)+'</button>';});
+    h+='</div></div>';
+  });
+  var all=t.qs.every(function(_,qi){return RD.ans[qi]!=null;});
+  if(!RD.done)h+='<div class="fbbar"><button class="btn" data-act="rcheck"'+(all?'':' disabled')+'>تحقق</button></div>';
+  else h+='<div class="fbbar '+(RD.ok===t.qs.length?'ok':'no')+'"><h3>'+RD.ok+' من '+t.qs.length+' صح</h3><p>+'+RD.gained+' نقطة خبرة</p><div class="acts two"><button class="btn" data-act="read">نص تاني</button><button class="btn ghost" data-act="rtext" data-i="'+RD.i+'">اقرا تاني</button></div></div>';
+  return h+'</div>';
+}
+
+/* grammar */
+function grammarView(){
+  var F=[["all","الكل"]].concat(LV.map(function(l){return [l,l];}));
+  var h='<div class="wrap">'+back('القواعد · '+L().name)
+    +'<div class="chips" style="margin-top:14px">'+F.map(function(x){return '<button class="chip" data-act="gf" data-f="'+x[0]+'" aria-pressed="'+(GF.lv===x[0])+'">'+x[1]+'</button>';}).join("")+'</div>';
+  LV.forEach(function(lv){
+    if(GF.lv!=="all"&&GF.lv!==lv)return;
+    h+='<div class="lv-head" style="margin-top:24px"><span class="lv-code" style="font-size:1.5rem">'+lv+'</span><span class="lv-name">'+LV_AR[lv]+'</span></div><div class="glist">';
+    L().units.filter(function(u){return u.lv===lv&&u.note;}).forEach(function(u){
+      h+='<div class="gitem"><b>'+esc(u.title)+'</b><p>'+esc(u.note)+'</p></div>';
+    });
+    L().tenses.filter(function(t){return t[3]===lv;}).forEach(function(t){
+      h+='<div class="gitem tense"><b>زمن: '+t[1]+' · <span class="ltr">'+t[2]+'</span></b><p>'+esc(t[4])+'</p></div>';
+    });
+    h+='</div>';
+  });
+  return h+'</div>';
+}
+
+/* stats */
+var DAYS_AR=["الحد","الاتنين","التلات","الأربع","الخميس","الجمعة","السبت"];
+function lastDays(n,offset){var a=[];for(var i=n-1;i>=0;i--){var d=new Date();d.setDate(d.getDate()-i-(offset||0));a.push({d:d,k:dstr(d)});}return a;}
+function sumDays(ds){var o={x:0,q:0,o:0,s:0,act:0};ds.forEach(function(x){var l=dayLog(x.k);o.x+=l.x;o.q+=l.q;o.o+=l.o;o.s+=l.s;if(l.x>0||l.q>0)o.act++;});return o;}
+function weekChart(){
+  var ds=lastDays(7),g=S.goal||50,vals=ds.map(function(x){return dayLog(x.k).x;});
+  var max=Math.max(g,Math.max.apply(null,vals));max=Math.ceil(max*1.15/10)*10||10;
+  var W=340,H=190,pl=8,pr=8,pt=22,pb=34,cw=(W-pl-pr)/7,bw=Math.min(30,cw*.58),ch=H-pt-pb;
+  var y=function(v){return pt+ch-ch*v/max;};
+  var s='<svg class="chart" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="نقاط الخبرة آخر 7 أيام">';
+  s+='<line x1="'+pl+'" x2="'+(W-pr)+'" y1="'+y(0)+'" y2="'+y(0)+'" class="axis"/>';
+  s+='<line x1="'+pl+'" x2="'+(W-pr)+'" y1="'+y(g)+'" y2="'+y(g)+'" class="goalline"/><text x="'+(W-pr)+'" y="'+(y(g)-5)+'" text-anchor="end" class="glab">الهدف '+g+'</text>';
+  ds.forEach(function(x,i){
+    var v=vals[i],cx=pl+cw*i+cw/2,top=y(v),isT=i===6,hit=v>=g;
+    if(v>0)s+='<rect x="'+(cx-bw/2)+'" y="'+top+'" width="'+bw+'" height="'+Math.max(2,y(0)-top)+'" rx="5" class="bar'+(hit?' hit':'')+(isT?' today':'')+'"/>';
+    s+='<text x="'+cx+'" y="'+(v>0?top-6:y(0)-6)+'" text-anchor="middle" class="val">'+v+'</text>';
+    s+='<text x="'+cx+'" y="'+(H-12)+'" text-anchor="middle" class="day'+(isT?' t':'')+'">'+(isT?'النهارده':DAYS_AR[x.d.getDay()])+'</text>';
+  });
+  return s+'</svg>';
+}
+function fmtMin(s){var m=Math.round(s/60);return m<60?m+' د':Math.floor(m/60)+' س '+(m%60)+' د';}
+function cmp(a,b){if(!b)return a?'<span class="up">جديد</span>':'';var d=Math.round(100*(a-b)/b);return d===0?'<span class="dim">زي اللي فاتت</span>':'<span class="'+(d>0?'up':'down')+'">'+(d>0?'+':'')+d+'%</span>';}
+function statsView(){
+  var w=sumDays(lastDays(7)),pw=sumDays(lastDays(7,7));
+  var acc=w.q?Math.round(100*w.o/w.q):0,pacc=pw.q?Math.round(100*pw.o/pw.q):0;
+  var h='<div class="wrap">'+back('الإحصائيات · '+L().name);
+  h+='<div class="panel"><div class="ph"><h3>آخر 7 أيام</h3><span class="dim">'+w.act+' من 7 أيام اتدربت فيهم</span></div>'+weekChart()
+    +'<div class="kpis"><div><small>نقاط خبرة</small><b>'+w.x+'</b>'+cmp(w.x,pw.x)+'</div><div><small>إجابات</small><b>'+w.q+'</b>'+cmp(w.q,pw.q)+'</div><div><small>الدقة</small><b>'+(w.q?acc+'%':'–')+'</b>'+(w.q&&pw.q?'<span class="'+(acc>=pacc?'up':'down')+'">'+(acc>=pacc?'+':'')+(acc-pacc)+' نقطة</span>':'')+'</div><div><small>وقت التدريب</small><b>'+fmtMin(w.s)+'</b>'+cmp(w.s,pw.s)+'</div></div>'
+    +'<p class="hint" style="text-align:start;margin-top:10px">الأرقام بالمقارنة بالأسبوع اللي قبله.</p></div>';
+  h+='<div class="panel"><div class="ph"><h3>الهدف اليومي</h3><span class="dim">أطول سلسلة: '+(S.bestStreak||curStreak())+' يوم</span></div><div class="chips">'
+    +[20,50,100,150].map(function(g){return '<button class="chip" data-act="goal" data-g="'+g+'" aria-pressed="'+(S.goal===g)+'">'+g+' نقطة'+(g===20?' · خفيف':g===50?' · عادي':g===100?' · جد':' · مكثف')+'</button>';}).join("")+'</div></div>';
+  h+='<div class="panel"><div class="ph"><h3>التقدّم في المستويات</h3><span class="dim">كلمات متقنة</span></div><div class="lvbars">';
+  LV.forEach(function(lv){var all=L().all.filter(function(i){return i.lv===lv;}),m=mastered(all),p=Math.round(100*m/all.length);
+    h+='<div class="lvb2"><span class="ltr">'+lv+'</span><span class="track"><i style="width:'+p+'%"></i></span><span class="num">'+m+'/'+all.length+'</span></div>';});
+  h+='</div></div>';
+  var miss=missedList().slice(0,10);
+  h+='<div class="panel"><div class="ph"><h3>أكتر الكلمات اللي بتغلط فيها</h3></div>';
+  if(!miss.length)h+='<p class="empty">لسه مفيش غلطات متسجلة. أول ما تغلط في كلمة هتظهر هنا.</p>';
+  else{var mx=rec(miss[0]).wrong;
+    h+='<div class="miss">'+miss.map(function(it){var r=rec(it);return '<div class="mrow"><div class="txt"><div class="t ltr">'+esc(it.t)+'</div><div class="a">'+esc(it.a)+'</div></div><span class="mbar"><i style="width:'+Math.round(100*r.wrong/mx)+'%"></i></span><span class="mn">'+r.wrong+'×</span><button class="spk" data-act="speak" data-t="'+esc(it.t)+'" aria-label="استمع">'+ico("spk")+'</button></div>';}).join("")+'</div>'
+      +'<div style="height:12px"></div><button class="btn" data-act="missgo">تدرّب على الكلمات دي</button>';}
+  h+='</div>';
+  var cs=cjStats(),tk=L().tenses.filter(function(t){return cs[t[0]]&&cs[t[0]].seen;});
+  h+='<div class="panel"><div class="ph"><h3>دقة التصريف حسب الزمن</h3></div>';
+  if(!tk.length)h+='<p class="empty">ابدأ تدريب التصريف وهتظهر دقتك في كل زمن هنا.</p>';
+  else{h+='<div class="lvbars">'+tk.map(function(t){var c=cs[t[0]],a=Math.max(0,Math.round(100*(c.seen-c.wrong)/c.seen));return '<div class="lvb2 wide"><span>'+t[1]+'</span><span class="track'+(a<70?' warn':'')+'"><i style="width:'+a+'%"></i></span><span class="num">'+a+'%</span></div>';}).join("")+'</div>';}
+  return h+'</div></div>';
+}
+
+function backupView(){
+  var code="";try{code=btoa(unescape(encodeURIComponent(JSON.stringify(S))));}catch(e){}
+  return '<div class="wrap bk">'+back('نسخة احتياطية')
+    +'<p style="margin-top:14px">'+(CL.on?'تقدّمك بيتحفظ تلقائي على حسابك وبيظهر لما تفتح الصفحة من أي جهاز. الكود ده نسخة إضافية لو حبيت تنقله لمكان تاني.':'تقدّمك محفوظ في المتصفح ده بس. الكود اللي تحت بيحتوي على كل تقدّمك، احفظه في مكان آمن وتقدر ترجّعه في أي جهاز.')+'</p>'
+    +'<h3>1. صدّر تقدّمك</h3><textarea id="bk-out" class="field area" readonly>'+esc(code)+'</textarea><div style="height:10px"></div><button class="btn" data-act="bkcopy">انسخ الكود</button>'
+    +'<h3>2. رجّع تقدّم محفوظ</h3><p>الصق الكود هنا. ده هيستبدل التقدّم الحالي.</p><textarea id="bk-in" class="field area" placeholder="الصق الكود هنا"></textarea><div style="height:10px"></div><button class="btn ghost" data-act="bkimport">استورد</button>'
+    +'<p class="msg" id="bkmsg" role="status"></p>'
+    +'<h3>3. ابدأ من الصفر</h3><button class="btn bad" data-act="reset">'+(resetArm?'أكيد؟ اضغط تاني للمسح':'امسح كل التقدّم')+'</button></div>';
+}
+function resultView(){
+  var m=mastered(L().all);
+  return '<div class="wrap"><div class="result"><h2>'+RES.title+'</h2>'
+    +'<div class="big-n">'+RES.big+'</div><div style="color:var(--muted)">'+RES.label+'</div>'
+    +(goalHit?'<div class="goal hit">'+ico("trophy")+'<div class="gtxt"><b>حققت هدف النهارده!</b><span style="color:var(--muted);font-size:.9rem">'+logDay().x+' نقطة من '+S.goal+'</span></div></div>':goalBar())
+    +'<div class="rgrid"><div><b>+'+RES.gained+'</b><small>نقطة خبرة</small></div><div><b>'+curStreak()+'</b><small>يوم متواصل</small></div><div><b>'+m+'</b><small>كلمة متقنة</small></div></div>'
+    +'<div class="acts"><button class="btn" data-act="home">كمّل</button><button class="btn ghost" data-act="again">العب تاني</button></div></div></div>';
+}
+function failView(){
+  var mon=G&&G.cfg.mode==="monster";
+  return '<div class="wrap"><div class="result"><h2>'+(mon?'الوحش كسبك':'القلوب خلصت')+'</h2><p style="margin:0;color:var(--muted)">طبيعي. الإجابات الصح اتسجلت، وجرّب تاني بسرعة.</p>'
+    +'<div class="acts"><button class="btn" data-act="again">جرّب تاني</button><button class="btn ghost" data-act="home">الرئيسية</button></div></div></div>';
+}
+var VIEWS={home:homeView,game:gameView,result:resultView,fail:failView,race:raceView,match:matchView,words:wordsView,backup:backupView,conj:conjView,ctable:ctableView,read:readView,rtext:rtextView,grammar:grammarView,stats:statsView};
+function render(){
+  var app=document.getElementById("app");
+  app.innerHTML=(VIEWS[view]||homeView)();
+  var inp=document.getElementById("ans");
+  if(inp&&G&&G.phase==="ask"&&view==="game"){
+    inp.focus();lastField=inp;
+    inp.addEventListener("input",function(){var b=document.getElementById("chk");if(b)b.disabled=!inp.value.trim();});
+  }
+  if(view!==lastView){window.scrollTo(0,0);lastView=view;}
+}
+function goHome(){
+  if(view==="game"&&G)addTime(G.t0);
+  if(view==="race"&&R)addTime(R.t0);
+  if(view==="match"&&M)addTime(M.t0);
+  stopRace();view="home";G=null;resetArm=false;save();render();
+}
+function bkmsg(t,bad){var e=document.getElementById("bkmsg");if(e){e.textContent=t;e.style.color=bad?"var(--bad)":"var(--good)";}}
+
+/* ---------- events ---------- */
+var app=document.getElementById("app");
+app.addEventListener("mousedown",function(e){if(e.target.closest(".accs button"))e.preventDefault();});
+app.addEventListener("focusin",function(e){if(e.target.tagName==="INPUT"&&e.target.classList.contains("field"))lastField=e.target;});
+app.addEventListener("click",function(e){
+  var b=e.target.closest("[data-act]");if(!b||b.disabled)return;
+  var a=b.dataset.act;
+  if(a==="lang"){S.lang=b.dataset.v;save();render();}
+  else if(a==="unit"){var u=L().units.find(function(x){return x.id===b.dataset.u;});beginSession({mode:"unit",unit:u,items:u.items});}
+  else if(a==="review"){startList("review");}
+  else if(a==="weakgo"){startList("weak");}
+  else if(a==="missgo"){startList("missed");}
+  else if(a==="monster"){startMonster();}
+  else if(a==="race"){startRace();}
+  else if(a==="match"){startMatch();}
+  else if(a==="fill"){startFill();}
+  else if(a==="words"||a==="backup"||a==="conj"||a==="read"||a==="grammar"||a==="stats"){view=a;render();}
+  else if(a==="unlock"){S.open=!S.open;save();render();}
+  else if(a==="speak"){speak(b.dataset.t);}
+  else if(a==="speakslow"){speak(b.dataset.t,.6);}
+  else if(a==="snd"){S.sound=!S.sound;save();if(!S.sound&&canSpeak)try{speechSynthesis.cancel();}catch(x){}render();}
+  else if(a==="quit"||a==="home"){goHome();}
+  else if(a==="again"){again();}
+  else if(a==="next"){next();}
+  else if(a==="check"){check();}
+  else if(a==="reveal"){G.reveal=true;var keep=document.getElementById("ans");var kv=keep?keep.value:"";render();var k2=document.getElementById("ans");if(k2){k2.value=kv;var c0=document.getElementById("chk");if(c0)c0.disabled=!kv.trim();}}
+  else if(a==="wf"){WF.f=b.dataset.f;render();}
+  else if(a==="gf"){GF.lv=b.dataset.f;render();}
+  else if(a==="goal"){S.goal=+b.dataset.g;save();render();}
+  else if(a==="mt"){matchTap(b.dataset.s,b.dataset.id);}
+  else if(a==="cjt"){
+    var sel=cjSel().slice(),t=b.dataset.t,ix=sel.indexOf(t);
+    if(ix>-1)sel.splice(ix,1);else sel.push(t);
+    sel=L().tenses.map(function(x){return x[0];}).filter(function(k){return sel.indexOf(k)>-1;});
+    if(!S.cjSel)S.cjSel={};S.cjSel[S.lang]=sel.length?sel:[t];save();render();
+  }
+  else if(a==="cjgo"){startConj(null);}
+  else if(a==="vtab"){openTable(+b.dataset.i);}
+  else if(a==="ctt"){CT.tk=b.dataset.t;CT.mode="learn";CT.res=null;CT.vals=["","","","","",""];render();}
+  else if(a==="ctquiz"){CT.mode="quiz";CT.res=null;CT.vals=["","","","","",""];render();var f0=document.getElementById("ct0");if(f0)f0.focus();}
+  else if(a==="ctlearn"){CT.mode="learn";CT.res=null;render();}
+  else if(a==="ctcheck"){checkTable();}
+  else if(a==="cjverb"){startConj(CT.vi);}
+  else if(a==="rtext"){openRead(+b.dataset.i);}
+  else if(a==="rhide"){RD.hide=!RD.hide;render();}
+  else if(a==="rans"){if(!RD.done){RD.ans[+b.dataset.q]=+b.dataset.o;render();}}
+  else if(a==="rcheck"){checkRead();}
+  else if(a==="acc"){
+    var f=(document.activeElement&&document.activeElement.tagName==="INPUT")?document.activeElement:lastField;
+    if(!f||!document.body.contains(f)||f.disabled)return;
+    var s=f.selectionStart==null?f.value.length:f.selectionStart,te=f.selectionEnd==null?s:f.selectionEnd;
+    f.value=f.value.slice(0,s)+b.dataset.c+f.value.slice(te);
+    f.focus();f.setSelectionRange(s+1,s+1);
+    var c=document.getElementById("chk");if(c&&f.id==="ans")c.disabled=!f.value.trim();
+  }
+  else if(a==="ropt"){
+    if(!R||R.lock)return;
+    R.lock=true;R.sel=+b.dataset.i;
+    var ok=R.q.opts[R.sel].c;
+    if(ok){R.score++;logAns(true);}else{R.wrong++;R.pen+=3;grade(R.q.it,false);save();}
+    render();
+    setTimeout(function(){if(view!=="race"||!R)return;raceQ();render();},ok?180:700);
+  }
+  else if(a==="bkcopy"){
+    var tx=document.getElementById("bk-out");tx.focus();tx.select();
+    try{navigator.clipboard.writeText(tx.value).then(function(){S.bk=Date.now();save();bkmsg("اتنسخ. احفظه في ملاحظاتك أو ابعته لنفسك.");},function(){bkmsg("حدّد الكود وانسخه يدوي.",true);});}
+    catch(x){bkmsg("حدّد الكود وانسخه يدوي.",true);}
+  }
+  else if(a==="bkimport"){
+    var v=document.getElementById("bk-in").value.trim();
+    try{
+      var o=JSON.parse(decodeURIComponent(escape(atob(v))));
+      if(!o||typeof o!=="object"||!o.items||typeof o.items!=="object")throw new Error("bad");
+      S=Object.assign(fresh(),o);save();bkmsg("تم الاستيراد. تقدّمك رجع.");
+    }catch(x){bkmsg("الكود مش صحيح. اتأكد إنك نسخته كامل.",true);}
+  }
+  else if(a==="reset"){
+    if(!resetArm){resetArm=true;render();}
+    else{S=fresh();save();resetArm=false;goHome();}
+  }
+  else if(G&&G.phase==="ask"&&view==="game"){
+    if(a==="opt"){G.sel=+b.dataset.i;render();}
+    else if(a==="build"){G.built.push(+b.dataset.i);render();}
+    else if(a==="unbuild"){G.built.splice(+b.dataset.p,1);render();}
+  }
+});
+app.addEventListener("input",function(e){
+  if(e.target.id==="wq"){WF.q=e.target.value;var l=document.getElementById("wlist");if(l)l.innerHTML=wlistHTML();}
+});
+document.addEventListener("keydown",function(e){
+  if(e.key!=="Enter"||e.target.tagName==="BUTTON"||e.target.tagName==="TEXTAREA")return;
+  if(view==="game"){
+    var b=document.querySelector('[data-act="check"],[data-act="next"]');
+    if(b&&!b.disabled){e.preventDefault();b.click();}
+  }else if(view==="ctable"&&CT&&CT.mode==="quiz"&&!CT.res&&e.target.id&&e.target.id.indexOf("ct")===0){
+    e.preventDefault();var n=+e.target.id.slice(2)+1,nx=document.getElementById("ct"+n);
+    if(nx)nx.focus();else checkTable();
+  }
+});
+
+/* ---------- cloud sync (per-viewer private docs) ---------- */
+var CL={db:null,uid:null,on:false,last:{},timer:null,busy:false,dirty:false};
+function cloudParts(){
+  var core={},fr={},es={};
+  Object.keys(S).forEach(function(k){if(k!=="items")core[k]=S[k];});
+  Object.keys(S.items).forEach(function(id){
+    var r=S.items[id],arr=[r.box||0,Math.round((r.due||0)/1000),r.seen||0,r.wrong||0];
+    (id.indexOf("es-")===0||id.indexOf("cj:es:")===0?es:fr)[id]=arr;
+  });
+  return {core:JSON.stringify(core),fr:JSON.stringify(fr),es:JSON.stringify(es)};
+}
+function cdoc(name){return CL.db.doc("data/users/"+CL.uid+"/"+name);}
+function cloudSchedule(){if(!CL.on)return;if(CL.timer)clearTimeout(CL.timer);CL.timer=setTimeout(cloudPush,2500);}
+function cloudPush(){
+  if(!CL.on)return;
+  if(CL.busy){CL.dirty=true;return;}
+  CL.busy=true;CL.dirty=false;
+  var parts=cloudParts(),ts=S.ts||Date.now(),names=["fr","es","core"],i=0;
+  function step(){
+    if(i>=names.length){CL.busy=false;if(CL.dirty)cloudSchedule();return;}
+    var n=names[i++];
+    if(parts[n]===CL.last[n]){step();return;}
+    cdoc(n).set({s:parts[n],ts:ts}).then(function(){CL.last[n]=parts[n];step();},function(err){
+      CL.busy=false;
+      if(err&&(err.code==="revoked"||err.code==="invalid_argument"||err.code==="not_granted")){CL.on=false;}
+      else if(err&&err.code==="unavailable"){setTimeout(cloudSchedule,4000);}
+    });
+  }
+  step();
+}
+function cloudInit(){
+  if(!window.claude||typeof window.claude.use!=="function")return;
+  Promise.all([window.claude.use("db"),window.claude.use("user")]).then(function(r){
+    var db=r[0],user=r[1];if(!db||!user)return null;
+    return user.id().then(function(uid){
+      if(!uid)return null;CL.db=db;CL.uid=uid;
+      return cdoc("core").get().then(function(snap){
+        var d=snap.exists?snap.data():null;
+        if(d&&typeof d.s==="string"&&(!HAD_LOCAL||(d.ts||0)>(S.ts||0))){
+          return Promise.all([cdoc("fr").get(),cdoc("es").get()]).then(function(ps){
+            var S2=Object.assign(fresh(),JSON.parse(d.s));S2.items={};
+            CL.last.core=d.s;
+            ps.forEach(function(p,ix){
+              var dd=p.exists?p.data():null;if(!dd||typeof dd.s!=="string")return;
+              CL.last[ix?"es":"fr"]=dd.s;
+              var m=JSON.parse(dd.s);Object.keys(m).forEach(function(id){var a=m[id];S2.items[id]={box:a[0],due:a[1]*1000,seen:a[2],wrong:a[3]};});
+            });
+            S=S2;saveLocal();CL.on=true;
+            if(view==="home"||view==="stats"||view==="words"||view==="conj"||view==="read")render();
+          });
+        }
+        CL.on=true;cloudPush();if(view==="home")render();
+      });
+    });
+  }).catch(function(){CL.on=false;});
+}
+render();
+cloudInit();
+
+})();
+</script>
+<script>if("serviceWorker" in navigator&&location.protocol!=="file:"){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){});});}</script>
+</body></html>
